@@ -1,0 +1,51 @@
+
+
+Bedeutung der einzelnen Beispiele:
+-----------------------------------
+
+1) Graph1.dat :         Beispielgraph aus der Aufgabenstellung.
+                        Auf Grundlage der Koordinaten der Knoten, koennen Sie den Euklidischen Abstand als Heuristik nehmen.
+
+2) Graph2.dat :         ein kleiner Beispielgraph (Kreis).
+                        Koennen Sie auch hier den Euklidischen Abstand nehmen? Passen Sie ggfs. Ihre Heuristik an!
+
+3) Graph3.dat :         Entfernungen (km) in Europa zwischen 0=Berlin, 1=Brest, 2=Genf,
+                        3=Lissabon, 4=Madrid, 5=Moskau, 6=Palermo, 7=Rotterdam,
+                        8=Stockholm, 9=Venedig, 10=Zuerich. Es wurden nur die Kanten mit
+                        Entfernungen < 1500 km in den Graphen aufgenommen.
+			Ueberlegen Sie sich an Hand dieser Informationen eine sinnvolle Heuristik.
+
+4) Graph4.dat :         Fahrtzeiten (min) in Deutschland zwischen 40 Staedten mit dem Auto:
+                        0=Aachen, 1=Augsburg, ..., 39=Wuerzburg. Es wurden nur die
+                        Kanten mit einer Fahrtzeit <= 2h in den Graphen aufgenommen.
+````````````````````````Ueberlegen Sie sich an Hand dieser Informationen eine sinnvolle Heuristik.
+
+5) - 9) Maze1.dat - Maze5.dat : 
+                        verschiedene rechteckige Labyrinthe (Randzellen haben keine Verbindung zum gegenüberliegenden Rand).
+                        "." entspricht einem passierbaren Feld, "#" entspricht einem Mauerstück.
+
+10) Random Maze :       In der unit.h steht die Funktion "ErzeugeLabyrinth", womit Sie sich ein 
+                        zufälliges Labyrinth der Größe "breite x hoehe" erzeugen lassen können. 
+                        Für "seed" kann ein beliebiger Wert eingegeben werden. Wenn Sie dasselbe 
+                        zufällige Labyrinth nochmal betrachten wollen, nehmen Sie denselben Wert 
+                        für "seed".
+                        
+                        Die Funktion gibt einen Vektor der Länge "breite x hoehe" zurück, wobei 
+                        die ersten "breite" Einträge für die erste Zeile im Labyrinth steht. 
+                        Jeder Vektoreintrag ist vom Typ "CellType", der in der unit.h als enum 
+                        class definiert ist und die Enumeratoren "Start", "Destination", "Wall" 
+                        oder "Ground" umfasst.
+
+
+Zur Kompilation:
+-----------------
+Stellt in der Datei CMakeLists.txt die Option "teil_b" auf ON.
+Dann erstellt einen Build-Ordner und wechselt dort hinein:
+  make build-sfml
+  cd build-sfml
+Hier ruft ihr CMake auf:
+  cmake ..
+CMake hat ein Makefile erzeugt, was ihr nun benutzen koennt:
+  make
+  make sfml-test
+
