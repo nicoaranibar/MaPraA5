@@ -45,14 +45,8 @@ void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
     not_visited.erase(std::remove(not_visited.begin(), not_visited.end(), min_index), not_visited.end());
 
     for (const auto& neighbor : g.getNeighbors(min_index)) {
-      VertexT neighbor_index = neighbor.first;
-      CostT edge_cost = neighbor.second;
-      if (std::find(not_visited.begin(), not_visited.end(), neighbor_index) != not_visited.end()) {
-        CostT new_cost = kostenZumStart[min_index] + edge_cost;
-        if (new_cost < kostenZumStart[neighbor_index]) {
-          kostenZumStart[neighbor_index] = new_cost;
-        }
-      }
+      kostenZumStart[neighbor.first] =
+          std::min(kostenZumStart[neighbor.first], kostenZumStart[min_index] + neighbor.second);
     }
   }
 
