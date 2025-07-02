@@ -50,7 +50,6 @@ void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
     }
   }
 
-
 }
 
 bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
