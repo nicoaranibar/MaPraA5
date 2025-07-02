@@ -1,6 +1,7 @@
 
 #include "astern/text_visualizer.h"
 #include "astern/unit.h"
+#include <algorithm>
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph {
@@ -12,9 +13,50 @@ class CoordinateGraph : public DistanceGraph {
   CostT cost(VertexT from, VertexT to) const override;
 };
 
-void Dijkstra(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
+void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
               std::vector<CostT>& kostenZumStart) {
-  // ...
+  // Initialize V\S 
+  std::vector<VertexT> not_visited(g.numVertices());
+  for (VertexT i = 0; i < g.numVertices(); ++i) {
+    not_visited[i] = i;
+  }
+  not_visited.erase(std::remove(not_visited.begin(), not_visited.end(), start), not_visited.end());
+
+  // Initialize costs
+  kostenZumStart.assign(g.numVertices(), infty);
+  kostenZumStart[start] = 0;
+  for (const auto& neighbor : g.getNeighbors(start)) {
+    kostenZumStart[neighbor.first] = neighbor.second;
+  }
+
+  // Actual algorithm
+  while (!not_visited.empty()) {
+    VertexT min_index = infty;
+    CostT min_cost = infty;
+    for (const auto& v : not_visited) {
+      if (kostenZumStart[v] < min_cost) {
+        min_cost = kostenZumStart[v];
+        min_index = v;
+      }
+    }
+    if (min_index == infty) {
+      break;  // No more reachable vertices
+    }
+    not_visited.erase(std::remove(not_visited.begin(), not_visited.end(), min_index), not_visited.end());
+
+    for (const auto& neighbor : g.getNeighbors(min_index)) {
+      VertexT neighbor_index = neighbor.first;
+      CostT edge_cost = neighbor.second;
+      if (std::find(not_visited.begin(), not_visited.end(), neighbor_index) != not_visited.end()) {
+        CostT new_cost = kostenZumStart[min_index] + edge_cost;
+        if (new_cost < kostenZumStart[neighbor_index]) {
+          kostenZumStart[neighbor_index] = new_cost;
+        }
+      }
+    }
+  }
+
+
 }
 
 bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
