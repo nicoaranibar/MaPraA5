@@ -5,6 +5,16 @@
 #include <iostream>
 #include <cmath>
 
+// Maze Graph
+class MazeGraph : public DistanceGraph {
+  public:
+    const NeighborT getNeighbors(VertexT v) const override;
+
+    CostT estimatedCost(VertexT from, VertexT to) const override;
+
+    CostT cost(VertexT from, VertexT to) const override;
+};
+
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph {
  public:
@@ -57,7 +67,17 @@ class CoordinateGraph : public DistanceGraph {
     }
   }
 
-  CostT cost(VertexT from, VertexT to) const override;
+  CostT cost(VertexT from, VertexT to) const override {
+    if (from >= vertexCount || to >= vertexCount) {
+      throw std::out_of_range("Vertex index out of range");
+    }
+    for (const auto& neighbor : adjacency_list[from]) {
+      if (neighbor.first == to) {
+        return neighbor.second;
+      }
+    }
+    return infty;  // No edge exists
+  }
 
   friend std::istream& operator>>(std::istream& is, CoordinateGraph& g) {
     is >> g.vertexCount >> g.num_edges;
