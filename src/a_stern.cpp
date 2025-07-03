@@ -54,7 +54,6 @@ class MazeGraph : public DistanceGraph {
       return std::abs(from_row - to_row) + std::abs(from_col - to_col);
     }
 
-    // TODO: implement this with A* later
     CostT cost(VertexT from, VertexT to) const override {
       if (from >= height * width || to >= height * width) {
         throw std::out_of_range("Vertex index out of range");
@@ -141,7 +140,6 @@ class CoordinateGraph : public DistanceGraph {
     }
   }
 
-  // TODO: implement this with A* later
   CostT cost(VertexT from, VertexT to) const override {
     if (from >= vertexCount || to >= vertexCount) {
       throw std::out_of_range("Vertex index out of range");
