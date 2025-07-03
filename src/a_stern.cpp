@@ -3,6 +3,7 @@
 #include "astern/unit.h"
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include <cmath>
 
 // Maze Graph
@@ -183,12 +184,39 @@ bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
 
 int main() {
   // Frage Beispielnummer vom User ab
+  int exampleID;
+  int graph_or_maze;
+  std::cout << "Type 1 for Graph, 2 for Maze: ";
+  std::cin >> graph_or_maze;
+  if (graph_or_maze != 1 && graph_or_maze != 2) {
+    std::cerr << "Invalid input. Please enter 1 for Graph or 2 for Maze." << std::endl;
+    return 1;
+  }
+  CoordinateGraph g;
+  if (graph_or_maze == 1) {
+    std::cout << "Enter graph example number (1-4): ";
+    std::cin >> exampleID;
+    if (exampleID < 1 || exampleID > 4) {
+      std::cerr << "Invalid example number. Please enter a number between 1 and 4." << std::endl;
+      return 1;
+    }
+    std::ifstream inputFile("graph" + std::to_string(exampleID) + ".txt");
+    g.setExampleID(exampleID);
+    inputFile >> g;
+  } else {
+    std::cout << "Enter maze example number (1-5): ";
+  }
+
 
   // Lade die zugehoerige Textdatei in einen Graphen
   // PruefeHeuristik
-
+  PruefeHeuristik(g);
   // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
   // Datei PruefeDijkstra / PruefeWeg
+
+
+  std::cout << "Press Enter to close" << std::endl;
+  std::cin.get();
 
   return 0;
 }
