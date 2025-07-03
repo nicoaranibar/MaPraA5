@@ -228,29 +228,80 @@ void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
 
   // Actual algorithm
   while (!not_visited.empty()) {
-    VertexT min_index = infty;
+    VertexT min_vertex = infty;
     CostT min_cost = infty;
     for (const auto& v : not_visited) {
       if (kostenZumStart[v] < min_cost) {
         min_cost = kostenZumStart[v];
-        min_index = v;
+        min_vertex = v;
       }
     }
-    if (min_index == infty) {
+    if (min_vertex == infty) {
       break;  // No more reachable vertices
     }
-    not_visited.erase(std::find(not_visited.begin(), not_visited.end(), min_index));
+    not_visited.erase(std::find(not_visited.begin(), not_visited.end(), min_vertex));
 
-    for (const auto& neighbor : g.getNeighbors(min_index)) {
+    for (const auto& neighbor : g.getNeighbors(min_vertex)) {
       kostenZumStart[neighbor.first] =
-          std::min(kostenZumStart[neighbor.first], kostenZumStart[min_index] + neighbor.second);
+          std::min(kostenZumStart[neighbor.first], kostenZumStart[min_vertex] + neighbor.second);
     }
   }
 }
 
-bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
+bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
             VertexT ziel, std::list<VertexT>& weg) {
-  // ...
+  const size_t N = g.numVertices();
+  weg.clear();
+  std::vector<CostT> gCost(N, infty);
+  std::vector<CostT> fCost(N, infty);
+  std::vector<VertexT> came_from(N, infty);
+
+  gCost[start] = 0;
+  fCost[start] = g.estimatedCost(start, ziel);
+
+  using PQItem = std::pair<CostT, VertexT>;
+  std::vector<PQItem> open;
+  std::make_heap(open.begin(), open.end(), std::greater<PQItem>());
+  open.emplace_back(fCost[start], start);
+  std::push_heap(open.begin(), open.end(), std::greater<PQItem>());
+
+  std::vector<bool> in_open(N, false);
+  in_open[start] = true;
+
+  while(!open.empty()) {
+    std::pop_heap(open.begin(), open.end(), std::greater<PQItem>());
+    auto [current_fCost, current] = open.back();
+    open.pop_back();
+    in_open[current] = false;
+
+    if (current == ziel) {
+      // Ziel erreicht, Weg rekonstruieren
+      while (current != infty) {
+        weg.push_front(current);
+        current = came_from[current];
+      }
+      return true;  // Weg gefunden
+    }
+
+    for (const auto& neighbor : g.getNeighbors(current)) {
+      VertexT neighbor_vertex = neighbor.first;
+      CostT edge_cost = neighbor.second;
+      CostT possible_cost = gCost[current] + edge_cost;
+
+      if (possible_cost < gCost[neighbor_vertex]) {
+        came_from[neighbor_vertex] = current;
+        gCost[neighbor_vertex] = possible_cost;
+        fCost[neighbor_vertex] = possible_cost + g.estimatedCost(neighbor_vertex, ziel);
+
+        if (!in_open[neighbor_vertex]) {
+          open.emplace_back(fCost[neighbor_vertex], neighbor_vertex);
+          std::push_heap(open.begin(), open.end(), std::greater<PQItem>());
+          in_open[neighbor_vertex] = true;
+        }
+      }
+    }
+  }
+
   return false;  // Kein Weg gefunden.
 }
 
@@ -280,6 +331,8 @@ int main() {
     }
     g.setExampleID(exampleID);
     inputFile >> g;
+    PruefeHeuristik(g);
+    
   } else {
     std::cout << "Enter maze example number (1-5): ";
     std::cin >> exampleID;
@@ -294,12 +347,13 @@ int main() {
     }
     g.setExampleID(exampleID);
     inputFile >> mg;
+    PruefeHeuristik(mg);
+
   }
 
 
   // Lade die zugehoerige Textdatei in einen Graphen
   // PruefeHeuristik
-  PruefeHeuristik(g);
   // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
   // Datei PruefeDijkstra / PruefeWeg
 
