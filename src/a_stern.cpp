@@ -9,11 +9,84 @@
 // Maze Graph
 class MazeGraph : public DistanceGraph {
   public:
-    const NeighborT getNeighbors(VertexT v) const override;
+    const NeighborT getNeighbors(VertexT v) const override {
+      if (v >= height * width) {
+        throw std::out_of_range("Vertex index out of range");
+      }
+      NeighborT neighbors;
+      int row = v / width;
+      int col = v % width;
 
-    CostT estimatedCost(VertexT from, VertexT to) const override;
+      if (cells[v] == CellType::Wall) {
+        return neighbors;  // No neighbors for walls
+      }
 
-    CostT cost(VertexT from, VertexT to) const override;
+      // Check up
+      if (row > 0 && cells[(row - 1) * width + col] != CellType::Wall) {
+        neighbors.emplace_back((row - 1) * width + col, 1);
+      }
+      // Check down
+      if (row < height - 1 && cells[(row + 1) * width + col] != CellType::Wall) {
+        neighbors.emplace_back((row + 1) * width + col, 1);
+      }
+      // Check left
+      if (col > 0 && cells[row * width + (col - 1)] != CellType::Wall) {
+        neighbors.emplace_back(row * width + (col - 1), 1);
+      }
+      // Check right
+      if (col < width - 1 && cells[row * width + (col + 1)] != CellType::Wall) {
+        neighbors.emplace_back(row * width + (col + 1), 1);
+      }
+
+      return neighbors;
+    }
+
+    CostT estimatedCost(VertexT from, VertexT to) const override {
+      if (from >= height * width || to >= height * width) {
+        throw std::out_of_range("Vertex index out of range");
+      }
+      int from_row = from / width;
+      int from_col = from % width;
+      int to_row = to / width;
+      int to_col = to % width;
+
+      // Using Manhattan distance as heuristic
+      return std::abs(from_row - to_row) + std::abs(from_col - to_col);
+    }
+
+    // TODO: implement this with A* later
+    CostT cost(VertexT from, VertexT to) const override {
+      if (from >= height * width || to >= height * width) {
+        throw std::out_of_range("Vertex index out of range");
+      }
+      for (const auto& neighbor : getNeighbors(from)) {
+        if (neighbor.first == to) {
+          return neighbor.second;  // Return the cost to the neighbor
+        }
+      }
+      return infty;  // No edge exists
+    }
+
+    friend std::istream& operator>>(std::istream& is, MazeGraph& g) {
+      is >> g.height >> g.width;
+      g.cells.resize(g.height * g.width);
+      for (int i = 0; i < g.height; ++i) {
+        for (int j = 0; j < g.width; ++j) {
+          char cell;
+          is >> cell;
+          if (cell == '#') {
+            g.cells[i*g.width + j] = CellType::Wall;
+          } else {
+            g.cells[i*g.width + j] = CellType::Ground;
+          }
+        }
+      }
+      return is;
+    }
+
+  private:
+    int width, height;
+    std::vector<CellType> cells;
 };
 
 // Ein Graph, der Koordinaten von Knoten speichert.
@@ -68,6 +141,7 @@ class CoordinateGraph : public DistanceGraph {
     }
   }
 
+  // TODO: implement this with A* later
   CostT cost(VertexT from, VertexT to) const override {
     if (from >= vertexCount || to >= vertexCount) {
       throw std::out_of_range("Vertex index out of range");
@@ -193,6 +267,7 @@ int main() {
     return 1;
   }
   CoordinateGraph g;
+  MazeGraph mg;
   if (graph_or_maze == 1) {
     std::cout << "Enter graph example number (1-4): ";
     std::cin >> exampleID;
@@ -200,11 +275,27 @@ int main() {
       std::cerr << "Invalid example number. Please enter a number between 1 and 4." << std::endl;
       return 1;
     }
-    std::ifstream inputFile("graph" + std::to_string(exampleID) + ".txt");
+    std::ifstream inputFile("../data/daten/Graph" + std::to_string(exampleID) + ".dat");
+    if (!inputFile) {
+      std::cerr << "Error opening file for graph example " << exampleID << std::endl;
+      return 1;
+    }
     g.setExampleID(exampleID);
     inputFile >> g;
   } else {
     std::cout << "Enter maze example number (1-5): ";
+    std::cin >> exampleID;
+    if (exampleID < 1 || exampleID > 4) {
+      std::cerr << "Invalid example number. Please enter a number between 1 and 4." << std::endl;
+      return 1;
+    }
+    std::ifstream inputFile("../data/daten/Maze" + std::to_string(exampleID) + ".dat");
+    if (!inputFile) {
+      std::cerr << "Error opening file for maze example " << exampleID << std::endl;
+      return 1;
+    }
+    g.setExampleID(exampleID);
+    inputFile >> mg;
   }
 
 
