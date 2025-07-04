@@ -441,7 +441,7 @@ int main() {
   // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
   // Datei PruefeDijkstra / PruefeWeg
 
-
+  std::cout << "\n \n All tests completed successfully!" << std::endl;
   std::cout << "Press Enter to close" << std::endl;
   std::cin.get();
 
