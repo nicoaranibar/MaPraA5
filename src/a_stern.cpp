@@ -83,8 +83,25 @@ class MazeGraph : public DistanceGraph {
       return is;
     }
 
+    std::vector<CellType> getCells() const {
+      return cells;
+    }
+
+    void setDimensions(unsigned int w, unsigned int h) {
+      width = w;
+      height = h;
+      cells.resize(width * height);
+    }
+
+    void setCells(std::vector<CellType> new_cells) {
+      if (new_cells.size() != width * height) {
+        throw std::invalid_argument("Size of new_cells does not match dimensions");
+      }
+      cells = new_cells;
+    }
+
   private:
-    int width, height;
+    unsigned int width, height;
     std::vector<CellType> cells;
 };
 
@@ -332,14 +349,64 @@ int main() {
     g.setExampleID(exampleID);
     inputFile >> g;
     PruefeHeuristik(g);
+
+    for (VertexT v = 0; v < g.numVertices(); ++v) {
+      std::vector<CostT> kostenZumStart;
+      Dijkstra(g, v, kostenZumStart);
+      PruefeDijkstra(exampleID, v, kostenZumStart);
+      for (VertexT ziel = 0; ziel < g.numVertices(); ++ziel) {
+        if (v != ziel) {
+          std::list<VertexT> weg;
+          if (A_star(g, v, ziel, weg)) {
+            PruefeWeg(exampleID, weg);
+          } else {
+            std::cout << "No path found from " << v << " to " << ziel << std::endl;
+          }
+        }
+      }
+    }
+
+
     
   } else {
-    std::cout << "Enter maze example number (1-5): ";
+    std::cout << "Enter maze example number (1-5) or 0 for ramdom maze: ";
     std::cin >> exampleID;
-    if (exampleID < 1 || exampleID > 4) {
+    if (exampleID < 0 || exampleID > 4) {
       std::cerr << "Invalid example number. Please enter a number between 1 and 4." << std::endl;
       return 1;
     }
+
+    // FOR RANDOM MAZE GENERATION
+    if (exampleID == 0) {
+      unsigned int seed, width, height;
+      std::cout << "Enter width and height for the random maze: " << std::endl;
+      std::cin >> width >> height;
+      std::cout << "Enter seed for random maze generation: " << std::endl;
+      std::cin >> seed;
+      if (width <= 0 || height <= 0 || seed <= 0) {
+        std::cerr << "Width and height and seed must be positive integers." << std::endl;
+        return 1;
+      }
+      mg = MazeGraph();
+      mg.setCells(ErzeugeLabyrinth(width, height, seed));
+      mg.setDimensions(width, height);
+
+
+      VertexT start_vertex = 0;
+      VertexT destination_vertex = 0;
+      for (VertexT i = 0; i < mg.numVertices(); ++i) {
+        if (mg.getCells()[i] == CellType::Start) start_vertex = i;
+        if (mg.getCells()[i] == CellType::Destination) destination_vertex = i;
+      }
+
+      std::list<VertexT> weg;
+      if (A_star(mg, start_vertex, destination_vertex, weg)) {
+        PruefeWeg(0, weg);
+      } else {
+        std::cout << "No path found from " << start_vertex << " to " << destination_vertex << std::endl;
+      }
+    }
+
     std::ifstream inputFile("../data/daten/Maze" + std::to_string(exampleID) + ".dat");
     if (!inputFile) {
       std::cerr << "Error opening file for maze example " << exampleID << std::endl;
@@ -348,6 +415,23 @@ int main() {
     g.setExampleID(exampleID);
     inputFile >> mg;
     PruefeHeuristik(mg);
+
+    for (const auto& pair : StartZielPaare(exampleID)) {
+      VertexT start = pair.first;
+      VertexT ziel = pair.second;
+      std::list<VertexT> weg;
+      if (A_star(mg, start, ziel, weg)) {
+        PruefeWeg(exampleID + 4, weg);
+      } else {
+        std::cout << "No path found from " << start << " to " << ziel << std::endl;
+      }
+    }
+
+    for (VertexT v = 0; v < mg.numVertices(); ++v) {
+      std::vector<CostT> kostenZumStart;
+      Dijkstra(mg, v, kostenZumStart);
+      PruefeDijkstra(exampleID + 4, v, kostenZumStart);
+    }
 
   }
 
