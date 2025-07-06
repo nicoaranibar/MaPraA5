@@ -292,12 +292,12 @@ bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
     in_open[current] = false;
 
     if (current == ziel) {
-      // Ziel erreicht, Weg rekonstruieren
+      // Ziel reached, reconstruct the path
       while (current != infty) {
         weg.push_front(current);
         current = came_from[current];
       }
-      return true;  // Weg gefunden
+      return true;  // Path found
     }
 
     for (const auto& neighbor : g.getNeighbors(current)) {
@@ -369,7 +369,7 @@ int main() {
 
     
   } else {
-    std::cout << "Enter maze example number (1-5) or 0 for ramdom maze: ";
+    std::cout << "Enter maze example number (1-5) or 0 for random maze: ";
     std::cin >> exampleID;
     if (exampleID < 0 || exampleID > 4) {
       std::cerr << "Invalid example number. Please enter a number between 1 and 4." << std::endl;
@@ -392,8 +392,8 @@ int main() {
       mg.setDimensions(width, height);
 
 
-      VertexT start_vertex = 0;
-      VertexT destination_vertex = 0;
+      VertexT start_vertex = undefinedVertex;
+      VertexT destination_vertex = undefinedVertex;
       for (VertexT i = 0; i < mg.numVertices(); ++i) {
         if (mg.getCells()[i] == CellType::Start) start_vertex = i;
         if (mg.getCells()[i] == CellType::Destination) destination_vertex = i;
@@ -401,10 +401,11 @@ int main() {
 
       std::list<VertexT> weg;
       if (A_star(mg, start_vertex, destination_vertex, weg)) {
-        PruefeWeg(0, weg);
+        PruefeWeg(10, weg);
       } else {
         std::cout << "No path found from " << start_vertex << " to " << destination_vertex << std::endl;
       }
+
     }
 
     std::ifstream inputFile("../data/daten/Maze" + std::to_string(exampleID) + ".dat");
