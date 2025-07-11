@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <unordered_set>
 
 // Maze Graph
 class MazeGraph : public DistanceGraph {
@@ -302,8 +303,10 @@ bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
 
     if (current == ziel) {
       // Ziel reached, reconstruct the path
-      while (current != infty && current != undefinedVertex) {
+      std::unordered_set<VertexT> visited;
+      while (current != infty && current != undefinedVertex && visited.find(current) == visited.end()) {
         weg.push_front(current);
+        visited.insert(current);
         current = came_from[current];
       }
       return true;  // Path found
@@ -365,6 +368,7 @@ int main() {
       PruefeDijkstra(exampleID, v, kostenZumStart);
       for (VertexT ziel = 0; ziel < g.numVertices(); ++ziel) {
         if (v != ziel) {
+          std::cout << "Trying A* from " << v << " to " << ziel << std::endl;
           std::list<VertexT> weg;
           if (A_star(g, v, ziel, weg)) {
             PruefeWeg(exampleID, weg);
