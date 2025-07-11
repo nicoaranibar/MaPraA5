@@ -188,6 +188,11 @@ int main() {
         if (mg.getCells()[i] == CellType::Destination) destination_vertex = i;
       }
 
+      if (start_vertex == undefinedVertex || destination_vertex == undefinedVertex) {
+      std::cerr << "Random maze has no start or destination cell." << std::endl;
+      return 1;
+      }
+
       std::list<VertexT> weg;
       if (A_star(mg, start_vertex, destination_vertex, weg)) {
         PruefeWeg(10, weg);
@@ -195,31 +200,31 @@ int main() {
         std::cout << "No path found from " << start_vertex << " to " << destination_vertex << std::endl;
       }
 
-    }
-
-    std::ifstream inputFile("../data/daten/Maze" + std::to_string(exampleID) + ".dat");
-    if (!inputFile) {
-      std::cerr << "Error opening file for maze example " << exampleID << std::endl;
-      return 1;
-    }
-    inputFile >> mg;
-    PruefeHeuristik(mg);
-
-    for (const auto& pair : StartZielPaare(exampleID)) {
-      VertexT start = pair.first;
-      VertexT ziel = pair.second;
-      std::list<VertexT> weg;
-      if (A_star(mg, start, ziel, weg)) {
-        PruefeWeg(exampleID + 4, weg);
-      } else {
-        std::cout << "No path found from " << start << " to " << ziel << std::endl;
+    } else {
+      std::ifstream inputFile("../data/daten/Maze" + std::to_string(exampleID) + ".dat");
+      if (!inputFile) {
+        std::cerr << "Error opening file for maze example " << exampleID << std::endl;
+        return 1;
       }
-    }
+      inputFile >> mg;
+      PruefeHeuristik(mg);
 
-    for (VertexT v = 0; v < mg.numVertices(); ++v) {
-      std::vector<CostT> kostenZumStart;
-      Dijkstra(mg, v, kostenZumStart);
-      PruefeDijkstra(exampleID + 4, v, kostenZumStart);
+      for (const auto& pair : StartZielPaare(exampleID+4)) {
+        VertexT start = pair.first;
+        VertexT ziel = pair.second;
+        std::list<VertexT> weg;
+        if (A_star(mg, start, ziel, weg)) {
+          PruefeWeg(exampleID + 4, weg);
+        } else {
+          std::cout << "No path found from " << start << " to " << ziel << std::endl;
+        }
+      }
+
+      for (VertexT v = 0; v < mg.numVertices(); ++v) {
+        std::vector<CostT> kostenZumStart;
+        Dijkstra(mg, v, kostenZumStart);
+        PruefeDijkstra(exampleID + 4, v, kostenZumStart);
+      }
     }
 
   }
