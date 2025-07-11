@@ -156,7 +156,7 @@ int main() {
 
 
     
-  } else {
+  } else if (graph_or_maze == 2) {
     std::cout << "Enter maze example number (1-5) or 0 for random maze: ";
     std::cin >> exampleID;
     if (exampleID < 0 || exampleID > 5) {
