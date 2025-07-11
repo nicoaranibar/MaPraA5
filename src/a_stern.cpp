@@ -318,7 +318,7 @@ bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
       CostT edge_cost = neighbor.second;
       CostT possible_cost = gCost[current] + edge_cost;
 
-      if (possible_cost < gCost[neighbor_vertex]) {
+      if (possible_cost < gCost[neighbor_vertex] && g.cost(current, neighbor_vertex) != infty) {
         came_from[neighbor_vertex] = current;
         gCost[neighbor_vertex] = possible_cost;
         fCost[neighbor_vertex] = possible_cost + g.estimatedCost(neighbor_vertex, ziel);
