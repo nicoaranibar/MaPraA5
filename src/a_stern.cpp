@@ -219,12 +219,6 @@ int main() {
           std::cout << "No path found from " << start << " to " << ziel << std::endl;
         }
       }
-
-      for (VertexT v = 0; v < mg.numVertices(); ++v) {
-        std::vector<CostT> kostenZumStart;
-        Dijkstra(mg, v, kostenZumStart);
-        PruefeDijkstra(exampleID + 4, v, kostenZumStart);
-      }
     }
 
   }
