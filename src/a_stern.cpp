@@ -121,6 +121,38 @@ class CoordinateGraph : public DistanceGraph {
     return adjacency_list[v];
   }
 
+  // Scale factor for the heuristic of 2. graph
+  void computeScaleFactor() {
+    double max_ratio = 1.0;
+    for (VertexT from = 0; from < vertexCount; ++from) {
+      auto [x1, y1] = coordinates[from];
+      for (const auto& [to, cost] : adjacency_list[from]) {
+        auto [x2, y2] = coordinates[to];
+        double euclidean = std::sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+        if (euclidean > 0.0) {
+          max_ratio = std::max(max_ratio, cost / euclidean);
+        }
+      }
+    }
+    scale_factor = max_ratio;
+  }
+
+  // Scale factor for the heuristic of 3. graph
+  void computeHaversineScaleFactor() {
+    double max_ratio = 1.0;
+    for (VertexT from = 0; from < vertexCount; ++from) {
+      auto [x1, y1] = coordinates[from];
+      for (const auto& [to, cost] : adjacency_list[from]) {
+        auto [x2, y2] = coordinates[to];
+        double haversine_distance = haversine(y1, x1, y2, x2);
+        if (haversine_distance > 0.0) {
+          max_ratio = std::max(max_ratio, cost / haversine_distance);
+        }
+      }
+    }
+    haversine_scale_factor = max_ratio;
+  }
+
   CostT estimatedCost(VertexT from, VertexT to) const override {
     if (from >= vertexCount || to >= vertexCount) {
       throw std::out_of_range("Vertex index out of range");
@@ -136,12 +168,13 @@ class CoordinateGraph : public DistanceGraph {
 
       case 2: {
         // Euclidean distance
-        return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        double euclidean = std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        return scale_factor * euclidean;
       }
 
       case 3: {
         // Haversine formula for spherical distance
-        return haversine(y1, x1, y2, x2);
+        return haversine_scale_factor * haversine(y1, x1, y2, x2);
       }
 
       case 4: {
@@ -211,7 +244,8 @@ private:
   std::vector<std::pair<double, double>> coordinates; 
   int exampleID;
   size_t num_edges;
-
+  double scale_factor = 1.0;
+  double haversine_scale_factor = 1.0;
 };
 
 
@@ -361,6 +395,7 @@ int main() {
     }
     g.setExampleID(exampleID);
     inputFile >> g;
+    g.computeScaleFactor();
     PruefeHeuristik(g);
 
     for (VertexT v = 0; v < g.numVertices(); ++v) {
@@ -369,13 +404,13 @@ int main() {
       PruefeDijkstra(exampleID, v, kostenZumStart);
       for (VertexT ziel = 0; ziel < g.numVertices(); ++ziel) {
         if (v != ziel) {
-          std::cout << "Trying A* from " << v << " to " << ziel << std::endl;
+          //std::cout << "Trying A* from " << v << " to " << ziel << std::endl;
           std::list<VertexT> weg;
           if (A_star(g, v, ziel, weg)) {
             PruefeWeg(exampleID, weg);
-          } else {
+          } /*else {
             std::cout << "No path found from " << v << " to " << ziel << std::endl;
-          }
+          } */
         }
       }
     }
@@ -459,6 +494,7 @@ int main() {
 
   std::cout << "\n \nAll tests completed successfully!" << std::endl;
   std::cout << "Press Enter to close" << std::endl;
+  std::cin.ignore();
   std::cin.get();
 
   return 0;
