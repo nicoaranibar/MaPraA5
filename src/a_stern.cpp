@@ -135,8 +135,8 @@ class CoordinateGraph : public DistanceGraph {
       }
 
       case 2: {
-        // Manhattan distance until we get a better idea
-        return std::abs(x2 - x1) + std::abs(y2 - y1);
+        // Euclidean distance
+        return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
       }
 
       case 3: {
@@ -147,7 +147,7 @@ class CoordinateGraph : public DistanceGraph {
       case 4: {
         // Haversine formula / avg speed
         double distance = haversine(y1, x1, y2, x2);
-        double time_sum = 0.0;
+        /* double time_sum = 0.0;
         double distance_sum = 0.0;
         // Find average speed
         for (VertexT v = 0; v < vertexCount; ++v) {
@@ -158,7 +158,8 @@ class CoordinateGraph : public DistanceGraph {
                 coordinates[v].second, coordinates[v].first);
           }
         }
-        double avg_speed = distance_sum / time_sum;
+        double avg_speed = distance_sum / time_sum; */
+        double avg_speed = 75.0; // Assuming an average speed of 75 km/h
         return distance / avg_speed;
       }
         
@@ -304,7 +305,7 @@ bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
     if (current == ziel) {
       // Ziel reached, reconstruct the path
       std::unordered_set<VertexT> visited;
-      while (current != infty && current != undefinedVertex && visited.find(current) == visited.end()) {
+      while (current != infty && current != undefinedVertex && visited.count(current) == 0) {
         weg.push_front(current);
         visited.insert(current);
         current = came_from[current];
@@ -401,8 +402,9 @@ int main() {
         return 1;
       }
       mg = MazeGraph();
-      mg.setCells(ErzeugeLabyrinth(width, height, seed));
       mg.setDimensions(width, height);
+      mg.setCells(ErzeugeLabyrinth(width, height, seed));
+      
 
 
       VertexT start_vertex = undefinedVertex;
@@ -455,7 +457,7 @@ int main() {
   // Loese die in der Aufgabenstellung beschriebenen Probleme fuer die jeweilige
   // Datei PruefeDijkstra / PruefeWeg
 
-  std::cout << "\n \n All tests completed successfully!" << std::endl;
+  std::cout << "\n \nAll tests completed successfully!" << std::endl;
   std::cout << "Press Enter to close" << std::endl;
   std::cin.get();
 
