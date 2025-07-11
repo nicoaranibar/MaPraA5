@@ -2,276 +2,14 @@
 #define _USE_MATH_DEFINES
 #include "astern/text_visualizer.h"
 #include "astern/unit.h"
+#include "astern/coordinate_graph.h"
+#include "astern/maze_graph.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <unordered_set>
 
-// Maze Graph
-class MazeGraph : public DistanceGraph {
-  public:
-    const NeighborT getNeighbors(VertexT v) const override {
-      if (v >= height * width) {
-        throw std::out_of_range("Vertex index out of range");
-      }
-      NeighborT neighbors;
-      unsigned int row = v / width;
-      unsigned int col = v % width;
-
-      if (cells[v] == CellType::Wall) {
-        return neighbors;  // No neighbors for walls
-      }
-
-      // Check up
-      if (row > 0 && cells[(row - 1) * width + col] != CellType::Wall) {
-        neighbors.emplace_back((row - 1) * width + col, 1);
-      }
-      // Check down
-      if (row < height - 1 && cells[(row + 1) * width + col] != CellType::Wall) {
-        neighbors.emplace_back((row + 1) * width + col, 1);
-      }
-      // Check left
-      if (col > 0 && cells[row * width + (col - 1)] != CellType::Wall) {
-        neighbors.emplace_back(row * width + (col - 1), 1);
-      }
-      // Check right
-      if (col < width - 1 && cells[row * width + (col + 1)] != CellType::Wall) {
-        neighbors.emplace_back(row * width + (col + 1), 1);
-      }
-
-      return neighbors;
-    }
-
-    CostT estimatedCost(VertexT from, VertexT to) const override {
-      if (from >= height * width || to >= height * width) {
-        throw std::out_of_range("Vertex index out of range");
-      }
-      int from_row = from / width;
-      int from_col = from % width;
-      int to_row = to / width;
-      int to_col = to % width;
-
-      // Using Manhattan distance as heuristic
-      return std::abs(from_row - to_row) + std::abs(from_col - to_col);
-    }
-
-    CostT cost(VertexT from, VertexT to) const override {
-      if (from >= height * width || to >= height * width) {
-        throw std::out_of_range("Vertex index out of range");
-      }
-      for (const auto& neighbor : getNeighbors(from)) {
-        if (neighbor.first == to) {
-          return neighbor.second;  // Return the cost to the neighbor
-        }
-      }
-      return infty;  // No edge exists
-    }
-
-    friend std::istream& operator>>(std::istream& is, MazeGraph& g) {
-      is >> g.height >> g.width;
-      g.cells.resize(g.height * g.width);
-      for (unsigned int i = 0; i < g.height; ++i) {
-        for (unsigned int j = 0; j < g.width; ++j) {
-          char cell;
-          is >> cell;
-          if (cell == '#') {
-            g.cells[i*g.width + j] = CellType::Wall;
-          } else {
-            g.cells[i*g.width + j] = CellType::Ground;
-          }
-        }
-      }
-      return is;
-    }
-
-    std::vector<CellType> getCells() const {
-      return cells;
-    }
-
-    void setDimensions(unsigned int w, unsigned int h) {
-      width = w;
-      height = h;
-      cells.resize(width * height);
-      vertexCount = width * height;
-    }
-
-    void setCells(std::vector<CellType> new_cells) {
-      if (new_cells.size() != width * height) {
-        throw std::invalid_argument("Size of new_cells does not match dimensions");
-      }
-      cells = new_cells;
-    }
-
-  private:
-    unsigned int width, height;
-    std::vector<CellType> cells;
-};
-
-static double haversine(double lat1, double lon1,
-                        double lat2, double lon2);
-
-// Ein Graph, der Koordinaten von Knoten speichert.
-class CoordinateGraph : public DistanceGraph {
- public:
-  const NeighborT getNeighbors(VertexT v) const override {
-    if (v >= vertexCount) {
-      throw std::out_of_range("Vertex index out of range");
-    }
-    return adjacency_list[v];
-  }
-
-  // Scale factor for the heuristic of 2. graph
-  void computeScaleFactor() {
-    double max_ratio = 1.0;
-    for (VertexT from = 0; from < vertexCount; ++from) {
-      auto [x1, y1] = coordinates[from];
-      for (const auto& [to, cost] : adjacency_list[from]) {
-        auto [x2, y2] = coordinates[to];
-        double euclidean = std::sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
-        if (euclidean > 0.0) {
-          max_ratio = std::max(max_ratio, cost / euclidean);
-        }
-      }
-    }
-    scale_factor = max_ratio;
-  }
-
-  // Scale factor for the heuristic of 3. graph
-  void computeHaversineScaleFactor() {
-    double max_ratio = 1.0;
-    for (VertexT from = 0; from < vertexCount; ++from) {
-      auto [x1, y1] = coordinates[from];
-      for (const auto& [to, cost] : adjacency_list[from]) {
-        auto [x2, y2] = coordinates[to];
-        double haversine_distance = haversine(y1, x1, y2, x2);
-        if (haversine_distance > 0.0) {
-          max_ratio = std::max(max_ratio, cost / haversine_distance);
-        }
-      }
-    }
-    haversine_scale_factor = max_ratio;
-  }
-
-  CostT estimatedCost(VertexT from, VertexT to) const override {
-    if (from >= vertexCount || to >= vertexCount) {
-      throw std::out_of_range("Vertex index out of range");
-    }
-    auto [x1, y1] = coordinates[from];
-    auto [x2, y2] = coordinates[to];
-    
-    switch (exampleID) {
-      case 1: {
-        // Euclidean distance
-        return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-      }
-
-      case 2: {
-        // Euclidean distance
-        double euclidean = std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-        return scale_factor * euclidean;
-      }
-
-      case 3: {
-        // Haversine formula for spherical distance
-        return haversine_scale_factor * haversine(y1, x1, y2, x2);
-      }
-
-      case 4: {
-        // Haversine formula / avg speed
-        double distance = haversine(y1, x1, y2, x2);
-        /* double time_sum = 0.0;
-        double distance_sum = 0.0;
-        // Find average speed
-        for (VertexT v = 0; v < vertexCount; ++v) {
-          for (const auto& neighbor : getNeighbors(v)) {
-            time_sum += neighbor.second;
-            distance_sum += haversine(
-                coordinates[neighbor.first].second, coordinates[neighbor.first].first,
-                coordinates[v].second, coordinates[v].first);
-          }
-        }
-        double avg_speed = distance_sum / time_sum; */
-        double avg_speed = 75.0; // Assuming an average speed of 75 km/h
-        return distance / avg_speed;
-      }
-        
-      default: {
-        throw std::runtime_error("Heuristic not implemented for this example");
-      }
-    }
-  }
-
-  CostT cost(VertexT from, VertexT to) const override {
-    if (from >= vertexCount || to >= vertexCount) {
-      throw std::out_of_range("Vertex index out of range");
-    }
-    for (const auto& neighbor : adjacency_list[from]) {
-      if (neighbor.first == to) {
-        return neighbor.second;
-      }
-    }
-    return infty;  // No edge exists
-  }
-
-  friend std::istream& operator>>(std::istream& is, CoordinateGraph& g) {
-    is >> g.vertexCount >> g.num_edges;
-    g.adjacency_list.assign(g.vertexCount, {});
-    g.coordinates.resize(g.vertexCount);
-
-    for (size_t v = 0; v < g.num_edges; ++v) {
-      VertexT from, to;
-      CostT cost;
-      is >> from >> to >> cost;
-      g.adjacency_list[from].emplace_back(to, cost);
-    }
-
-    for (VertexT v = 0; v < g.vertexCount; ++v) {
-      double x, y;
-      is >> x >> y;
-      g.coordinates[v] = {x, y};
-    }
-
-    return is;
-  }
-
-  void setExampleID(int id) {
-    exampleID = id;
-  }
-
-private:
-  std::vector<NeighborT> adjacency_list;
-  std::vector<std::pair<double, double>> coordinates; 
-  int exampleID;
-  size_t num_edges;
-  double scale_factor = 1.0;
-  double haversine_scale_factor = 1.0;
-};
-
-
-// Taken from https://www.geeksforgeeks.org/haversine-formula-to-find-distance-between-two-points-on-a-sphere/
-static double haversine(double lat1, double lon1,
-                        double lat2, double lon2)
-    {
-        // distance between latitudes
-        // and longitudes
-        double dLat = (lat2 - lat1) *
-                      M_PI / 180.0;
-        double dLon = (lon2 - lon1) * 
-                      M_PI / 180.0;
-
-        // convert to radians
-        lat1 = (lat1) * M_PI / 180.0;
-        lat2 = (lat2) * M_PI / 180.0;
-
-        // apply formulae
-        double a = pow(std::sin(dLat / 2), 2) + 
-                   pow(std::sin(dLon / 2), 2) * 
-                   std::cos(lat1) * std::cos(lat2);
-        double rad = 6371.0;
-        double c = 2 * asin(std::sqrt(a));
-        return rad * c;
-    }
 
 void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
               std::vector<CostT>& kostenZumStart) {
@@ -396,6 +134,7 @@ int main() {
     g.setExampleID(exampleID);
     inputFile >> g;
     g.computeScaleFactor();
+    g.computeHaversineScaleFactor();
     PruefeHeuristik(g);
 
     for (VertexT v = 0; v < g.numVertices(); ++v) {
@@ -463,7 +202,6 @@ int main() {
       std::cerr << "Error opening file for maze example " << exampleID << std::endl;
       return 1;
     }
-    g.setExampleID(exampleID);
     inputFile >> mg;
     PruefeHeuristik(mg);
 
