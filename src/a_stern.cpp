@@ -1,4 +1,5 @@
 
+#define _USE_MATH_DEFINES
 #include "astern/text_visualizer.h"
 #include "astern/unit.h"
 #include <algorithm>
@@ -14,8 +15,8 @@ class MazeGraph : public DistanceGraph {
         throw std::out_of_range("Vertex index out of range");
       }
       NeighborT neighbors;
-      int row = v / width;
-      int col = v % width;
+      unsigned int row = v / width;
+      unsigned int col = v % width;
 
       if (cells[v] == CellType::Wall) {
         return neighbors;  // No neighbors for walls
@@ -69,8 +70,8 @@ class MazeGraph : public DistanceGraph {
     friend std::istream& operator>>(std::istream& is, MazeGraph& g) {
       is >> g.height >> g.width;
       g.cells.resize(g.height * g.width);
-      for (int i = 0; i < g.height; ++i) {
-        for (int j = 0; j < g.width; ++j) {
+      for (unsigned int i = 0; i < g.height; ++i) {
+        for (unsigned int j = 0; j < g.width; ++j) {
           char cell;
           is >> cell;
           if (cell == '#') {
@@ -91,6 +92,7 @@ class MazeGraph : public DistanceGraph {
       width = w;
       height = h;
       cells.resize(width * height);
+      vertexCount = width * height;
     }
 
     void setCells(std::vector<CellType> new_cells) {
@@ -104,6 +106,9 @@ class MazeGraph : public DistanceGraph {
     unsigned int width, height;
     std::vector<CellType> cells;
 };
+
+static double haversine(double lat1, double lon1,
+                        double lat2, double lon2);
 
 // Ein Graph, der Koordinaten von Knoten speichert.
 class CoordinateGraph : public DistanceGraph {
@@ -123,19 +128,22 @@ class CoordinateGraph : public DistanceGraph {
     auto [x2, y2] = coordinates[to];
     
     switch (exampleID) {
-      case 1:
+      case 1: {
         // Euclidean distance
         return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      }
 
-      case 2:
+      case 2: {
         // Manhattan distance until we get a better idea
         return std::abs(x2 - x1) + std::abs(y2 - y1);
+      }
 
-      case 3:
+      case 3: {
         // Haversine formula for spherical distance
         return haversine(y1, x1, y2, x2);
+      }
 
-      case 4:
+      case 4: {
         // Haversine formula / avg speed
         double distance = haversine(y1, x1, y2, x2);
         double time_sum = 0.0;
@@ -151,9 +159,11 @@ class CoordinateGraph : public DistanceGraph {
         }
         double avg_speed = distance_sum / time_sum;
         return distance / avg_speed;
+      }
         
-      default:
+      default: {
         throw std::runtime_error("Heuristic not implemented for this example");
+      }
     }
   }
 
@@ -278,7 +288,6 @@ bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
 
   using PQItem = std::pair<CostT, VertexT>;
   std::vector<PQItem> open;
-  std::make_heap(open.begin(), open.end(), std::greater<PQItem>());
   open.emplace_back(fCost[start], start);
   std::push_heap(open.begin(), open.end(), std::greater<PQItem>());
 
@@ -293,7 +302,7 @@ bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
 
     if (current == ziel) {
       // Ziel reached, reconstruct the path
-      while (current != infty) {
+      while (current != infty && current != undefinedVertex) {
         weg.push_front(current);
         current = came_from[current];
       }
@@ -371,7 +380,7 @@ int main() {
   } else {
     std::cout << "Enter maze example number (1-5) or 0 for random maze: ";
     std::cin >> exampleID;
-    if (exampleID < 0 || exampleID > 4) {
+    if (exampleID < 0 || exampleID > 5) {
       std::cerr << "Invalid example number. Please enter a number between 1 and 4." << std::endl;
       return 1;
     }
