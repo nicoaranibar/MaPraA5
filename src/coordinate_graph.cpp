@@ -30,138 +30,114 @@ static double haversine(double lat1, double lon1,
         return rad * c;
     }
 
-class CoordinateGraph : public DistanceGraph {
- public:
-  const NeighborT getNeighbors(VertexT v) const override {
-    if (v >= vertexCount) {
-      throw std::out_of_range("Vertex index out of range");
+
+const DistanceGraph::NeighborT CoordinateGraph::getNeighbors(VertexT v) const {
+  if (v >= vertexCount) {
+    throw std::out_of_range("Vertex index out of range");
+  }
+  return adjacency_list[v];
+}
+
+CostT CoordinateGraph::cost(VertexT from, VertexT to) const {
+  if (from >= vertexCount || to >= vertexCount) {
+    throw std::out_of_range("Vertex index out of range");
+  }
+  for (const auto& neighbor : adjacency_list[from]) {
+    if (neighbor.first == to) {
+      return neighbor.second;
     }
-    return adjacency_list[v];
+  }
+  return infty;  // No edge exists
+}
+
+CostT CoordinateGraph::estimatedCost(VertexT from, VertexT to) const {
+  if (from >= vertexCount || to >= vertexCount) {
+    throw std::out_of_range("Vertex index out of range");
+  }
+  auto [x1, y1] = coordinates[from];
+  auto [x2, y2] = coordinates[to];
+
+  switch (exampleID) {
+    case 1: {
+      // Euclidean distance
+      return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    }
+
+    case 2: {
+      // Euclidean distance with scale factor
+      double euclidean = std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      return scale_factor * euclidean;
+    }
+
+    case 3: {
+      // Haversine formula for spherical distance
+      return haversine_scale_factor * haversine(y1, x1, y2, x2);
+    }
+
+    case 4: {
+      // Haversine formula / avg speed
+      double distance = haversine(y1, x1, y2, x2);
+      double avg_speed = 75.0; // Assuming an average speed of 75 km/h
+      return distance / avg_speed;
+    }
+      
+    default: {
+      throw std::runtime_error("Heuristic not implemented for this example");
+    }
+  }
+}
+
+std::istream& operator>>(std::istream& is, CoordinateGraph& g) {
+  is >> g.vertexCount >> g.num_edges;
+  g.adjacency_list.assign(g.vertexCount, {});
+  g.coordinates.resize(g.vertexCount);
+
+  for (size_t v = 0; v < g.num_edges; ++v) {
+    VertexT from, to;
+    CostT cost;
+    is >> from >> to >> cost;
+    g.adjacency_list[from].emplace_back(to, cost);
   }
 
-  // Scale factor for the heuristic of 2. graph
-  void computeScaleFactor() {
-    double max_ratio = 1.0;
-    for (VertexT from = 0; from < vertexCount; ++from) {
-      auto [x1, y1] = coordinates[from];
-      for (const auto& [to, cost] : adjacency_list[from]) {
-        auto [x2, y2] = coordinates[to];
-        double euclidean = std::sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
-        if (euclidean > 0.0) {
-          max_ratio = std::min(max_ratio, cost / euclidean);
-        }
-      }
-    }
-    scale_factor = max_ratio;
+  for (VertexT v = 0; v < g.vertexCount; ++v) {
+    double x, y;
+    is >> x >> y;
+    g.coordinates[v] = {x, y};
   }
 
-  // Scale factor for the heuristic of 3. graph
-  void computeHaversineScaleFactor() {
-    double max_ratio = 1.0;
-    for (VertexT from = 0; from < vertexCount; ++from) {
-      auto [x1, y1] = coordinates[from];
-      for (const auto& [to, cost] : adjacency_list[from]) {
-        auto [x2, y2] = coordinates[to];
-        double haversine_distance = haversine(y1, x1, y2, x2);
-        if (haversine_distance > 0.0) {
-          max_ratio = std::min(max_ratio, cost / haversine_distance);
-        }
-      }
-    }
-    haversine_scale_factor = max_ratio;
-  }
+  return is;
+}
 
-  CostT estimatedCost(VertexT from, VertexT to) const override {
-    if (from >= vertexCount || to >= vertexCount) {
-      throw std::out_of_range("Vertex index out of range");
-    }
+void CoordinateGraph::setExampleID(int id) {
+  exampleID = id;
+}
+
+void CoordinateGraph::computeScaleFactor() {
+  double max_ratio = 1.0;
+  for (VertexT from = 0; from < vertexCount; ++from) {
     auto [x1, y1] = coordinates[from];
-    auto [x2, y2] = coordinates[to];
-    
-    switch (exampleID) {
-      case 1: {
-        // Euclidean distance
-        return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-      }
-
-      case 2: {
-        // Euclidean distance
-        double euclidean = std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-        return scale_factor * euclidean;
-      }
-
-      case 3: {
-        // Haversine formula for spherical distance
-        return haversine_scale_factor * haversine(y1, x1, y2, x2);
-      }
-
-      case 4: {
-        // Haversine formula / avg speed
-        double distance = haversine(y1, x1, y2, x2);
-        /* double time_sum = 0.0;
-        double distance_sum = 0.0;
-        // Find average speed
-        for (VertexT v = 0; v < vertexCount; ++v) {
-          for (const auto& neighbor : getNeighbors(v)) {
-            time_sum += neighbor.second;
-            distance_sum += haversine(
-                coordinates[neighbor.first].second, coordinates[neighbor.first].first,
-                coordinates[v].second, coordinates[v].first);
-          }
-        }
-        double avg_speed = distance_sum / time_sum; */
-        double avg_speed = 75.0; // Assuming an average speed of 75 km/h
-        return distance / avg_speed;
-      }
-        
-      default: {
-        throw std::runtime_error("Heuristic not implemented for this example");
+    for (const auto& [to, cost] : adjacency_list[from]) {
+      auto [x2, y2] = coordinates[to];
+      double euclidean = std::sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+      if (euclidean > 0.0) {
+        max_ratio = std::min(max_ratio, cost / euclidean);
       }
     }
   }
+  scale_factor = max_ratio;
+}
 
-  CostT cost(VertexT from, VertexT to) const override {
-    if (from >= vertexCount || to >= vertexCount) {
-      throw std::out_of_range("Vertex index out of range");
-    }
-    for (const auto& neighbor : adjacency_list[from]) {
-      if (neighbor.first == to) {
-        return neighbor.second;
+void CoordinateGraph::computeHaversineScaleFactor() {
+  double max_ratio = 1.0;
+  for (VertexT from = 0; from < vertexCount; ++from) {
+    auto [x1, y1] = coordinates[from];
+    for (const auto& [to, cost] : adjacency_list[from]) {
+      auto [x2, y2] = coordinates[to];
+      double haversine_distance = haversine(y1, x1, y2, x2);
+      if (haversine_distance > 0.0) {
+        max_ratio = std::min(max_ratio, cost / haversine_distance);
       }
     }
-    return infty;  // No edge exists
   }
-
-  friend std::istream& operator>>(std::istream& is, CoordinateGraph& g) {
-    is >> g.vertexCount >> g.num_edges;
-    g.adjacency_list.assign(g.vertexCount, {});
-    g.coordinates.resize(g.vertexCount);
-
-    for (size_t v = 0; v < g.num_edges; ++v) {
-      VertexT from, to;
-      CostT cost;
-      is >> from >> to >> cost;
-      g.adjacency_list[from].emplace_back(to, cost);
-    }
-
-    for (VertexT v = 0; v < g.vertexCount; ++v) {
-      double x, y;
-      is >> x >> y;
-      g.coordinates[v] = {x, y};
-    }
-
-    return is;
-  }
-
-  void setExampleID(int id) {
-    exampleID = id;
-  }
-
-private:
-  std::vector<NeighborT> adjacency_list;
-  std::vector<std::pair<double, double>> coordinates; 
-  int exampleID;
-  size_t num_edges;
-  double scale_factor = 1.0;
-  double haversine_scale_factor = 1.0;
-};
+  haversine_scale_factor = max_ratio;
+}
