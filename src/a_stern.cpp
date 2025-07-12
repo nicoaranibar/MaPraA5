@@ -11,7 +11,7 @@
 #include <unordered_set>
 
 
-void Dijkstra(const DistanceGraph& g,  GraphVisualizer& v, VertexT start,
+void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v,*/ VertexT start,
               std::vector<CostT>& kostenZumStart) {
   // Initialize V\S 
   std::vector<VertexT> not_visited(g.numVertices());
@@ -92,7 +92,7 @@ class PriorityQueue {
 
 
 
-bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
+bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
             VertexT ziel, std::list<VertexT>& weg) {
   const size_t N = g.numVertices();
   weg.clear();
@@ -104,7 +104,7 @@ bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
   fCost[start] = g.estimatedCost(start, ziel);
   PriorityQueue open;
   open.push({fCost[start], start});
-  v.markVertex(start, VertexStatus::InQueue);
+  //v.markVertex(start, VertexStatus::InQueue);
   
   while (!open.empty()) {
     VertexT cur = open.pop();
@@ -114,11 +114,11 @@ bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
       for (VertexT v = ziel; v != infty; v = came_from[v]) {
         weg.push_front(v);
       }
-      v.markVertex(ziel, VertexStatus::Done);
+      //v.markVertex(ziel, VertexStatus::Done);
       return true;
     }
 
-    v.markVertex(cur, VertexStatus::Active);
+    //v.markVertex(cur, VertexStatus::Active);
 
     for (const auto& [neighbor, cost] : g.getNeighbors(cur)) {
       CostT tentative_gCost = gCost[cur] + cost;
@@ -127,11 +127,11 @@ bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
         gCost[neighbor] = tentative_gCost;
         fCost[neighbor] = tentative_gCost + g.estimatedCost(neighbor, ziel);
         open.update({fCost[neighbor], neighbor});
-        v.markEdge({cur, neighbor}, EdgeStatus::Active);
-        v.updateVertex(neighbor, tentative_gCost, fCost[neighbor], cur, VertexStatus::InQueue);
+        //v.markEdge({cur, neighbor}, EdgeStatus::Active);
+        //v.updateVertex(neighbor, tentative_gCost, fCost[neighbor], cur, VertexStatus::InQueue);
       }
     }
-    v.markVertex(cur, VertexStatus::Done);
+    //v.markVertex(cur, VertexStatus::Done);
   }
   
   return false;  // Kein Weg gefunden.
@@ -164,26 +164,52 @@ int main() {
     g.setExampleID(exampleID);
     g.computeScaleFactor();
     g.computeHaversineScaleFactor();
+    PruefeHeuristik(g);
 
     for (VertexT start = 0; start < g.numVertices(); ++start) {
-      std::cout << "\n Now checking Dijkstra for start vertex " << start << "...\n";
+      std::cout << "\nNow checking Dijkstra for start vertex " << start << "...";
       std::vector<CostT> D;
-      TextVisualizer v;
-      Dijkstra(g, v, start, D);
+      Dijkstra(g, start, D);
       PruefeDijkstra(exampleID, start, D);
-      std::cout << "\n Now checking A* for start vertex " << start << "...\n";
-      std::list<VertexT> weg;
-      if (A_star(g, v, start, 0, weg)) {
-        PruefeWeg(exampleID, weg);
-      } else {
-        std::cout << "No path found from vertex " << start << " to vertex 0." << std::endl;
+
+      std::cout << "Now checking A* for start vertex " << start << "...\n";
+      for (VertexT ziel = 0; ziel < g.numVertices(); ++ziel) {
+        if (ziel == start) continue;  // Skip if start and goal are the same
+        std::list<VertexT> weg;
+        if (A_star(g, start, ziel, weg)) {
+          PruefeWeg(exampleID, weg);
+        } else {
+          std::cout << "A* did not find a path from " << start << " to " << ziel << ".\n";
+        }
       }
-      std::cout << "\n ------------------- \n";
+      
     }
 
     
 
-  }
+  } else if (exampleID >= 5 && exampleID <= 9) {
+    // ----- Beispiele 5–9: MazeGraph + Dijkstra + A*
+    std::string filename = "daten/Maze" + std::to_string(exampleID) + ".dat";
+    std::ifstream file(filename);
+    if (!file) {
+      std::cerr << "Could not open file: " << filename << std::endl;
+      return 1;
+    }
+
+    MazeGraph g;
+    file >> g;
+    PruefeHeuristik(g);
+
+    for (const auto& [start, ziel] : StartZielPaare(exampleID)) {
+      std::list<VertexT> weg;
+      if (A_star(g, start, ziel, weg)) {
+        PruefeWeg(exampleID, weg);
+      } else {
+        std::cout << "A* did not find a path from " << start << " to " << ziel << ".\n";
+      }
+    }
+
+  } 
 
 
   std::cout << "\n \nAll tests completed successfully!" << std::endl;
