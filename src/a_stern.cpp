@@ -4,6 +4,7 @@
 #include "astern/unit.h"
 #include "astern/coordinate_graph.h"
 #include "astern/maze_graph.h"
+#include "astern/random_maze.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -221,7 +222,31 @@ int main() {
       }
     }
 
-  } 
+  } else if (exampleID == 10) {
+    // ----- RandomMaze
+    int width, height;
+    std::cout << "Enter width and height of the maze: ";
+    std::cin >> width >> height;
+
+    unsigned int seed;
+    std::cout << "Enter seed for random maze generation: ";
+    std::cin >> seed;
+
+    std::vector<CellType> cells = ErzeugeLabyrinth(width, height, seed);
+    RandomMaze maze(width, height, cells);
+
+    VertexT start = maze.getStart();
+    VertexT destination = maze.getDestination();
+    
+    std::cout << "Start vertex: " << start << ", Destination vertex: " << destination << "\n";
+
+    std::list<VertexT> weg;
+    if (A_star(maze, start, destination, weg)) {
+      PruefeWeg(10, weg);
+    } else {
+      std::cout << "A* did not find a path from " << start << " to " << destination << ".\n";
+    }
+  }
 
 
   std::cout << "\n \nAll tests completed successfully!" << std::endl;
