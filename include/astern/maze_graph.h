@@ -20,8 +20,12 @@ class MazeGraph : public DistanceGraph {
 
 
  private:
-  unsigned int width, height;
+  int width, height;
   std::vector<CellType> cells;
+  bool isValidCell(int x, int y) const;
+  VertexT coordToVertex(int x, int y) const;
+  std::pair<int, int> vertexToCoord(VertexT v) const;
+
 };
 
 

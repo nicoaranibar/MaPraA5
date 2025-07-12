@@ -10,70 +10,67 @@ const DistanceGraph::NeighborT MazeGraph::getNeighbors(VertexT v) const {
         throw std::out_of_range("Vertex index out of range");
     }
     NeighborT neighbors;
-    unsigned int row = v / width;
-    unsigned int col = v % width;
+    auto [row, col] = vertexToCoord(v);
 
-    if (cells[v] == CellType::Wall) {
-        return neighbors;  // No neighbors for walls
+    static const int dx[] = {0,  1,  0, -1};
+    static const int dy[] = {-1, 0,  1,  0};
+
+    for (int d = 0; d < 4; ++d) {
+        int nx = row + dx[d];
+        int ny = col + dy[d];
+
+        if (isValidCell(nx, ny)) {
+            VertexT nv = coordToVertex(nx, ny);
+            if (cells[nv] != CellType::Wall) {
+                neighbors.emplace_back(nv, 1.0);
+            }
+        }
     }
 
-    // Check up
-    if (row > 0 && cells[(row - 1) * width + col] != CellType::Wall) {
-        neighbors.emplace_back((row - 1) * width + col, 1);
-    }
-    // Check down
-    if (row < height - 1 && cells[(row + 1) * width + col] != CellType::Wall) {
-        neighbors.emplace_back((row + 1) * width + col, 1);
-    }
-    // Check left
-    if (col > 0 && cells[row * width + (col - 1)] != CellType::Wall) {
-        neighbors.emplace_back(row * width + (col - 1), 1);
-    }
-      // Check right
-    if (col < width - 1 && cells[row * width + (col + 1)] != CellType::Wall) {
-        neighbors.emplace_back(row * width + (col + 1), 1);
-    }
     return neighbors;
 }
+
+
 
 CostT MazeGraph::estimatedCost(VertexT from, VertexT to) const {
     if (from >= height * width || to >= height * width) {
         throw std::out_of_range("Vertex index out of range");
     }
-    int from_row = from / width;
-    int from_col = from % width;
-    int to_row = to / width;
-    int to_col = to % width;
+    auto [from_row, from_col] = vertexToCoord(from);
+    auto [to_row, to_col] = vertexToCoord(to);
+
 
     // Using Manhattan distance as heuristic
     return std::abs(from_row - to_row) + std::abs(from_col - to_col);
 }
 
+
+
 CostT MazeGraph::cost(VertexT from, VertexT to) const {
     if (from >= height * width || to >= height * width) {
         throw std::out_of_range("Vertex index out of range");
     }
-    if (cells[from] == CellType::Wall || cells[to] == CellType::Wall) {
-        return infty;  // No cost if either cell is a wall
+    
+    for (const auto& neighbor : getNeighbors(from)) {
+        if (neighbor.first == to) {
+            return neighbor.second; 
+        }
     }
-    return 1;  // Assuming uniform cost for moving between adjacent cells
 }
 
+
+
 std::istream& operator>>(std::istream& is, MazeGraph& g) {
-    unsigned int height, width;
-    is >> height >> width;
+    int height, width;
+    is >> width >> height;
     g.setDimensions(width, height);
-    g.cells.resize(width * height);
-    for (unsigned int i = 0; i < height; ++i) {
-        for (unsigned int j = 0; j < width; ++j) {
+
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
             char cell;
             is >> cell;
             if (cell == '#') {
                 g.cells[i * width + j] = CellType::Wall;
-            } else if (cell == 'S') {
-                g.cells[i * width + j] = CellType::Start;
-            } else if (cell == 'D') {
-                g.cells[i * width + j] = CellType::Destination;
             } else {
                 g.cells[i * width + j] = CellType::Ground;
             }
@@ -82,9 +79,13 @@ std::istream& operator>>(std::istream& is, MazeGraph& g) {
     return is;
 }
 
+
+
 std::vector<CellType> MazeGraph::getCells() const {
     return cells;
 }
+
+
 
 void MazeGraph::setDimensions(int w, int h) {
     width = w;
@@ -93,6 +94,8 @@ void MazeGraph::setDimensions(int w, int h) {
     vertexCount = width * height;
 }
 
+
+
 void MazeGraph::setCells(std::vector<CellType> new_cells) {
     if (new_cells.size() != width * height) {
         throw std::invalid_argument("Size of new_cells does not match dimensions");
@@ -100,3 +103,26 @@ void MazeGraph::setCells(std::vector<CellType> new_cells) {
     cells = new_cells;
 }
 
+
+
+bool MazeGraph::isValidCell(int x, int y) const {
+    return x < width && y < height && x >= 0 && y >= 0;
+}
+
+
+
+VertexT MazeGraph::coordToVertex(int x, int y) const {
+    if (x >= width || y >= height || x < 0 || y < 0) {
+        throw std::out_of_range("Coordinates out of range");
+    }
+    return y * width + x;
+}
+
+
+
+std::pair<int, int> MazeGraph::vertexToCoord(VertexT v) const {
+    if (v >= vertexCount) {
+        throw std::out_of_range("Vertex index out of range");
+    }
+    return {v % width, v / width};
+}
