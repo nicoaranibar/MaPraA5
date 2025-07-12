@@ -72,6 +72,7 @@ class PriorityQueue {
   }
 
   void update(const PQItem& item) {
+    // Check if item already exists in the queue
     for (auto& existing_item : heap) {
       if (existing_item.second == item.second) {
         if (item.first < existing_item.first) {
@@ -80,9 +81,9 @@ class PriorityQueue {
         }
         return;
       }
-      push(item);
-      return;
     }
+    // Item not found, add it to the queue
+    push(item);
   }
 
   bool empty() const { return heap.empty(); }
@@ -99,6 +100,7 @@ bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
   std::vector<CostT> gCost(N, infty);
   std::vector<CostT> fCost(N, infty);
   std::vector<VertexT> came_from(N, undefinedVertex);
+  std::vector<bool> closed(N, false);  // Track processed vertices
 
   gCost[start] = 0;
   fCost[start] = g.estimatedCost(start, ziel);
@@ -109,9 +111,15 @@ bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
   while (!open.empty()) {
     VertexT cur = open.pop();
 
+    // Skip if already processed
+    if (closed[cur]) {
+      continue;
+    }
+    closed[cur] = true;
+
     if (cur == ziel) {
       weg.clear();
-      for (VertexT v = ziel; v != infty; v = came_from[v]) {
+      for (VertexT v = ziel; v != undefinedVertex; v = came_from[v]) {
         weg.push_front(v);
       }
       //v.markVertex(ziel, VertexStatus::Done);
@@ -121,6 +129,10 @@ bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
     //v.markVertex(cur, VertexStatus::Active);
 
     for (const auto& [neighbor, cost] : g.getNeighbors(cur)) {
+      if (closed[neighbor]) {
+        continue;  // Skip already processed vertices
+      }
+      
       CostT tentative_gCost = gCost[cur] + cost;
       if (tentative_gCost < gCost[neighbor]) {
         came_from[neighbor] = cur;
