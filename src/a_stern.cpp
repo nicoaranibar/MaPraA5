@@ -161,6 +161,9 @@ int main() {
 
     CoordinateGraph g;
     file >> g;
+    g.setExampleID(exampleID);
+    g.computeScaleFactor();
+    g.computeHaversineScaleFactor();
 
     for (VertexT start = 0; start < g.numVertices(); ++start) {
       std::cout << "\n Now checking Dijkstra for start vertex " << start << "...\n";
