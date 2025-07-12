@@ -8,7 +8,7 @@ RandomMaze::RandomMaze(int w, int h, const std::vector<CellType>& c) {
         throw std::invalid_argument("Size of cells does not match dimensions");
     }
 
-    setDimensions(width, height);
+    setDimensions(w, h);
     cells = c;
     
     // Find start and destination cells
