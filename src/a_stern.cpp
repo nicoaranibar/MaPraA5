@@ -49,6 +49,49 @@ void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
   }
 }
 
+
+
+class PriorityQueue {
+ public:
+  using PQItem = std::pair<CostT, VertexT>;
+
+ private:
+  std::vector<PQItem> heap;
+
+ public:
+  void push(const PQItem& item) {
+    heap.push_back(item);
+    std::push_heap(heap.begin(), heap.end(), std::greater<PQItem>());
+  }
+
+  VertexT pop() {
+    std::pop_heap(heap.begin(), heap.end(), std::greater<PQItem>());
+    PQItem min = heap.back();
+    heap.pop_back();
+    return min.second;
+  }
+
+  void update(const PQItem& item) {
+    for (auto& existing_item : heap) {
+      if (existing_item.second == item.second) {
+        if (item.first < existing_item.first) {
+          existing_item = item;
+          std::make_heap(heap.begin(), heap.end(), std::greater<PQItem>());
+        }
+        return;
+      }
+      push(item);
+      return;
+    }
+  }
+
+  bool empty() const { return heap.empty(); }
+
+};
+
+
+
+
 bool A_star(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
             VertexT ziel, std::list<VertexT>& weg) {
   const size_t N = g.numVertices();
