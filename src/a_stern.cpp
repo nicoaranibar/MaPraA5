@@ -11,7 +11,7 @@
 #include <unordered_set>
 
 
-void Dijkstra(const DistanceGraph& g, /* GraphVisualizer& v, */ VertexT start,
+void Dijkstra(const DistanceGraph& g,  GraphVisualizer& v, VertexT start,
               std::vector<CostT>& kostenZumStart) {
   // Initialize V\S 
   std::vector<VertexT> not_visited(g.numVertices());
@@ -137,10 +137,50 @@ bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
   return false;  // Kein Weg gefunden.
 }
 
+
+
 int main() {
   std::cout << "Starting tests... \n" << std::endl;
 
+  int exampleID;
+  std::cout << "Enter example ID. 1-4 for CoordinateGraph, 5-9 for MazeGraph, 10 for RandomMaze: \n";
+  std::cin >> exampleID;
+  if (exampleID < 1 || exampleID > 10) {
+    std::cerr << "Invalid example ID. Please enter a number between 1 and 10." << std::endl;
+    return 1;
+  }
 
+  if (exampleID >= 1 && exampleID <= 4) {
+    // ----- Beispiele 1–4: CoordinateGraph + Dijkstra
+    std::string filename = "daten/Graph" + std::to_string(exampleID) + ".dat";
+    std::ifstream file(filename);
+    if (!file) {
+      std::cerr << "Could not open file: " << filename << std::endl;
+      return 1;
+    }
+
+    CoordinateGraph g;
+    file >> g;
+
+    for (VertexT start = 0; start < g.numVertices(); ++start) {
+      std::cout << "\n Now checking Dijkstra for start vertex " << start << "...\n";
+      std::vector<CostT> D;
+      TextVisualizer v;
+      Dijkstra(g, v, start, D);
+      PruefeDijkstra(exampleID, start, D);
+      std::cout << "\n Now checking A* for start vertex " << start << "...\n";
+      std::list<VertexT> weg;
+      if (A_star(g, v, start, 0, weg)) {
+        PruefeWeg(exampleID, weg);
+      } else {
+        std::cout << "No path found from vertex " << start << " to vertex 0." << std::endl;
+      }
+      std::cout << "\n ------------------- \n";
+    }
+
+    
+
+  }
 
 
   std::cout << "\n \nAll tests completed successfully!" << std::endl;
