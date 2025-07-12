@@ -235,8 +235,6 @@ int main() {
     std::vector<CellType> cells = ErzeugeLabyrinth(width, height, seed);
     RandomMaze maze(width, height, cells);
 
-    std::cout << "ojeto creado" << std::endl;
-
     VertexT start = maze.getStart();
     VertexT destination = maze.getDestination();
     
