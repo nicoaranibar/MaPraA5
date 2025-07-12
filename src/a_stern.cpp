@@ -201,7 +201,7 @@ int main() {
 
   } else if (exampleID >= 5 && exampleID <= 9) {
     // ----- Beispiele 5–9: MazeGraph + Dijkstra + A*
-    std::string filename = "daten/Maze" + std::to_string(exampleID) + ".dat";
+    std::string filename = "daten/Maze" + std::to_string(exampleID-4) + ".dat";
     std::ifstream file(filename);
     if (!file) {
       std::cerr << "Could not open file: " << filename << std::endl;
