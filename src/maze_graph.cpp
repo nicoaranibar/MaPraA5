@@ -81,12 +81,6 @@ std::istream& operator>>(std::istream& is, MazeGraph& g) {
 
 
 
-std::vector<CellType> MazeGraph::getCells() const {
-    return cells;
-}
-
-
-
 void MazeGraph::setDimensions(int w, int h) {
     width = w;
     height = h;
@@ -94,14 +88,6 @@ void MazeGraph::setDimensions(int w, int h) {
     vertexCount = width * height;
 }
 
-
-
-void MazeGraph::setCells(std::vector<CellType> new_cells) {
-    if (new_cells.size() != width * height) {
-        throw std::invalid_argument("Size of new_cells does not match dimensions");
-    }
-    cells = new_cells;
-}
 
 
 
