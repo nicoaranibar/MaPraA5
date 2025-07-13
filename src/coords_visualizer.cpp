@@ -12,6 +12,14 @@ CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     from.resize(g.numVertices(), undefinedVertex);
     font.loadFromFile("../data/font/BebasNeue-Regular.ttf");
 
+    vertexStatuses.resize(g.numVertices(), VertexStatus::UnknownVertex);
+    edgeStatuses.clear();
+    for (VertexT u = 0; u < g.numVertices(); ++u) {
+        for (const auto& [v, cost] : g.getNeighbors(u)) {
+            edgeStatuses[{u, v}] = EdgeStatus::UnknownEdge;
+        }
+    }
+
     if (!font.loadFromFile("../data/font/BebasNeue-Regular.ttf")) {
         std::cout << "Error loading font file." << std::endl;
     }

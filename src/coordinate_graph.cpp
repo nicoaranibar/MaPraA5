@@ -7,8 +7,8 @@
 
 
 // Taken from https://www.geeksforgeeks.org/haversine-formula-to-find-distance-between-two-points-on-a-sphere/
-static double haversine(double lat1, double lon1,
-                        double lat2, double lon2)
+double haversine(double lat1, double lon1,
+                  double lat2, double lon2)
     {
         // distance between latitudes
         // and longitudes
