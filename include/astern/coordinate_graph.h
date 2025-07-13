@@ -22,6 +22,10 @@ class CoordinateGraph : public DistanceGraph {
   void computeScaleFactor();
   void computeHaversineScaleFactor();
 
+  std::vector<std::pair<double, double>> getCoordinates() const {
+    return coordinates;
+  }
+
  private:
   std::vector<NeighborT> adjacency_list;
   std::vector<std::pair<double, double>> coordinates; 

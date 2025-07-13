@@ -5,6 +5,7 @@
 #include "astern/coordinate_graph.h"
 #include "astern/maze_graph.h"
 #include "astern/random_maze.h"
+#include "astern/coords_visualizer.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -94,7 +95,7 @@ class PriorityQueue {
 
 
 
-bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
+bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
             VertexT ziel, std::list<VertexT>& weg) {
   const size_t N = g.numVertices();
   weg.clear();
@@ -107,7 +108,7 @@ bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
   fCost[start] = g.estimatedCost(start, ziel);
   PriorityQueue open;
   open.push({fCost[start], start});
-  //v.markVertex(start, VertexStatus::InQueue);
+  v.markVertex(start, VertexStatus::InQueue);
   
   while (!open.empty()) {
     VertexT cur = open.pop();
@@ -123,11 +124,11 @@ bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
       for (VertexT v = ziel; v != undefinedVertex; v = came_from[v]) {
         weg.push_front(v);
       }
-      //v.markVertex(ziel, VertexStatus::Done);
+      v.markVertex(ziel, VertexStatus::Done);
       return true;
     }
 
-    //v.markVertex(cur, VertexStatus::Active);
+    v.markVertex(cur, VertexStatus::Active);
 
     for (const auto& [neighbor, cost] : g.getNeighbors(cur)) {
       if (closed[neighbor]) {
@@ -140,11 +141,11 @@ bool A_star(const DistanceGraph& g, /*GraphVisualizer& v,*/ VertexT start,
         gCost[neighbor] = tentative_gCost;
         fCost[neighbor] = tentative_gCost + g.estimatedCost(neighbor, ziel);
         open.update({fCost[neighbor], neighbor});
-        //v.markEdge({cur, neighbor}, EdgeStatus::Active);
-        //v.updateVertex(neighbor, tentative_gCost, fCost[neighbor], cur, VertexStatus::InQueue);
+        v.markEdge({cur, neighbor}, EdgeStatus::Active);
+        v.updateVertex(neighbor, tentative_gCost, fCost[neighbor], cur, VertexStatus::InQueue);
       }
     }
-    //v.markVertex(cur, VertexStatus::Done);
+    v.markVertex(cur, VertexStatus::Done);
   }
   
   return false;  // Kein Weg gefunden.
@@ -164,7 +165,9 @@ int main() {
   }
 
   if (exampleID >= 1 && exampleID <= 4) {
-    // ----- Beispiele 1–4: CoordinateGraph + Dijkstra
+    // ----- Beispiele 1–4: CoordinateGraph + Dijkstra + A*
+
+    CoordsVisualizer v;
     std::string filename = "daten/Graph" + std::to_string(exampleID) + ".dat";
     std::ifstream file(filename);
     if (!file) {
@@ -189,8 +192,10 @@ int main() {
       for (VertexT ziel = 0; ziel < g.numVertices(); ++ziel) {
         if (ziel == start) continue;  // Skip if start and goal are the same
         std::list<VertexT> weg;
-        if (A_star(g, start, ziel, weg)) {
+        if (A_star(g, v, start, ziel, weg)) {
           PruefeWeg(exampleID, weg);
+          v.markOptimalPath(weg);
+          v.draw();
         } else {
           std::cout << "A* did not find a path from " << start << " to " << ziel << ".\n";
         }
@@ -201,7 +206,7 @@ int main() {
     
 
   } else if (exampleID >= 5 && exampleID <= 9) {
-    // ----- Beispiele 5–9: MazeGraph + Dijkstra + A*
+    // ----- Beispiele 5–9: MazeGraph + A*
     std::string filename = "daten/Maze" + std::to_string(exampleID-4) + ".dat";
     std::ifstream file(filename);
     if (!file) {
@@ -213,10 +218,14 @@ int main() {
     file >> g;
     PruefeHeuristik(g);
 
+    TextVisualizer v;
+
     for (const auto& [start, ziel] : StartZielPaare(exampleID)) {
       std::list<VertexT> weg;
-      if (A_star(g, start, ziel, weg)) {
+      if (A_star(g, v, start, ziel, weg)) {
         PruefeWeg(exampleID, weg);
+        //v.markOptimalPath(weg);
+        //v.draw();
       } else {
         std::cout << "A* did not find a path from " << start << " to " << ziel << ".\n";
       }
@@ -242,9 +251,13 @@ int main() {
     
     std::cout << "Start vertex: " << start << ", Destination vertex: " << destination << "\n";
 
+    PruefeHeuristik(maze);
+    TextVisualizer v;
     std::list<VertexT> weg;
-    if (A_star(maze, start, destination, weg)) {
+    if (A_star(maze, v, start, destination, weg)) {
       PruefeWeg(10, weg);
+      //v.markOptimalPath(weg);
+      //v.draw();
     } else {
       std::cout << "A* did not find a path from " << start << " to " << destination << ".\n";
     }
