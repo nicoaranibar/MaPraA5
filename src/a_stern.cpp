@@ -196,13 +196,21 @@ int main() {
         std::list<VertexT> weg;
         if (A_star(g, v, start, ziel, weg)) {
           PruefeWeg(exampleID, weg);
-          v.markOptimalPath(weg);
-          v.draw();
         } else {
           std::cout << "A* did not find a path from " << start << " to " << ziel << ".\n";
         }
       }
       
+    }
+
+    // Use two nodes just for visualization
+    std::list<VertexT> weg;
+    VertexT last = g.numVertices() - 1; // Use the last vertex as destination
+    if (A_star(g, v, 0, last, weg)) {
+      v.markOptimalPath(weg);
+      v.draw();
+    } else {
+      std::cout << "A* did not find a path from 0 to last.\n";
     }
 
     v.waitUntilClosed();

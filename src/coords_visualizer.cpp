@@ -86,7 +86,7 @@ void CoordsVisualizer::draw() {
             auto [x2, y2] = toScreenCoords(graph.getCoordinates()[u]);
             auto edge = std::make_pair(v, u);
 
-            sf::Color edgeColor =  sf::Color(80, 80, 80); // Default edge color
+            sf::Color edgeColor =  sf::Color::White; // Default edge color
 
             auto it = edgeStatuses.find(edge);
             if (it != edgeStatuses.end()) {
@@ -146,7 +146,7 @@ void CoordsVisualizer::draw() {
 
         // Draw cost text
         if (gCosts[v] < infty) {
-            sf::Text costText(std::to_string(static_cast<int>(gCosts[v])), font, 12);
+            sf::Text costText(std::to_string(static_cast<int>(gCosts[v])), font, 20);
             costText.setFillColor(sf::Color::White);
             costText.setPosition(x + radius, y - radius);
             window.draw(costText);
