@@ -208,6 +208,7 @@ int main() {
     v.resetStatus();
     VertexT last = g.numVertices() - 2; // Use the last vertex as destination
     if (A_star(g, v, 0, last, weg)) {
+      PruefeWeg(exampleID, weg);
       v.markOptimalPath(weg);
       v.draw();
     } else {
