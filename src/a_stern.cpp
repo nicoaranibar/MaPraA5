@@ -167,7 +167,7 @@ int main() {
   if (exampleID >= 1 && exampleID <= 4) {
     // ----- Beispiele 1–4: CoordinateGraph + Dijkstra + A*
 
-    CoordsVisualizer v;
+    
     std::string filename = "daten/Graph" + std::to_string(exampleID) + ".dat";
     std::ifstream file(filename);
     if (!file) {
@@ -181,6 +181,7 @@ int main() {
     g.computeScaleFactor();
     g.computeHaversineScaleFactor();
     PruefeHeuristik(g);
+    CoordsVisualizer v(g);
 
     for (VertexT start = 0; start < g.numVertices(); ++start) {
       std::cout << "\nNow checking Dijkstra for start vertex " << start << "...";
