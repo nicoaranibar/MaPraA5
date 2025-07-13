@@ -12,6 +12,10 @@ CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     from.resize(g.numVertices(), undefinedVertex);
     font.loadFromFile("../data/font/BebasNeue-Regular.ttf");
 
+    if (!font.loadFromFile("../data/font/BebasNeue-Regular.ttf")) {
+        std::cout << "Error loading font file." << std::endl;
+    }
+
     auto [minX, maxX] = std::minmax_element(g.getCoordinates().begin(), g.getCoordinates().end(),
                                             [](auto a, auto b) { return a.first < b.first; });
     auto [minY, maxY] = std::minmax_element(g.getCoordinates().begin(), g.getCoordinates().end(),
