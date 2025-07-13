@@ -172,3 +172,15 @@ std::pair<float, float> CoordsVisualizer::toScreenCoords(std::pair<double, doubl
     float y = margin + (logicalCoords.second - graph.getCoordinates()[0].second) * scaleY;
     return {x, y};
 }
+
+
+void CoordsVisualizer::waitUntilClosed() {
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+        }
+    }
+}

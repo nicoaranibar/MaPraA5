@@ -182,7 +182,7 @@ int main() {
     g.computeHaversineScaleFactor();
     PruefeHeuristik(g);
     CoordsVisualizer v(g);
-    std::cout << "visualizer loaded\n" << std::endl;
+    std::cout << "Visualizer loaded\n" << std::endl;
 
     for (VertexT start = 0; start < g.numVertices(); ++start) {
       std::cout << "\nNow checking Dijkstra for start vertex " << start << "...";
@@ -205,7 +205,7 @@ int main() {
       
     }
 
-    
+    v.waitUntilClosed();
 
   } else if (exampleID >= 5 && exampleID <= 9) {
     // ----- Beispiele 5–9: MazeGraph + A*

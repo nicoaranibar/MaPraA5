@@ -34,6 +34,8 @@ class CoordsVisualizer : public GraphVisualizer {
 
         void markOptimalPath(const std::list<VertexT>& path);
 
+        void waitUntilClosed();
+
     private:
         std::pair<float, float> toScreenCoords(std::pair<double, double> logicalCoords) const;
 };
