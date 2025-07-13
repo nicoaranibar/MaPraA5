@@ -65,7 +65,7 @@ void CoordsVisualizer::draw() {
     }
 
     window.clear(sf::Color::Black);
-    const float radius = 5.0f;
+    /*const float radius = 5.0f;
 
     for (VertexT v = 0; v < graph.numVertices(); ++v) {
         for (const auto& [u, cost] : graph.getNeighbors(v)) {
@@ -141,7 +141,7 @@ void CoordsVisualizer::draw() {
             costText.setPosition(x + radius, y - radius);
             window.draw(costText);
         }
-    }
+    } */
 
     window.display();
     sf::sleep(sf::milliseconds(50)); // slow down the drawing to make it visible
