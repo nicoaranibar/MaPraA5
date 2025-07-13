@@ -26,6 +26,16 @@ class CoordinateGraph : public DistanceGraph {
     return coordinates;
   }
 
+  std::pair<VertexT, VertexT> getExamplePair() const {
+    switch (exampleID) {
+      case 1: return {3, 2};
+      case 2: return {0, 2};
+      case 3: return {0, 3};
+      case 4: return {0, 4};
+      default: return {0, 1}; // Default case
+    }
+  }
+
  private:
   std::vector<NeighborT> adjacency_list;
   std::vector<std::pair<double, double>> coordinates; 

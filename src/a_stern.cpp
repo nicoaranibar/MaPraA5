@@ -204,7 +204,7 @@ int main() {
     }
 
     // Use two nodes just for visualization
-    std::list<VertexT> weg;
+    /*std::list<VertexT> weg;
     v.resetStatus();
     if (A_star(g, v, 3, 2, weg)) {
       PruefeWeg(exampleID, weg);
@@ -212,7 +212,7 @@ int main() {
       v.draw();
     } else {
       std::cout << "A* did not find a path from 0 to last.\n";
-    }
+    }*/
 
     v.waitUntilClosed();
 
