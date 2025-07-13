@@ -206,8 +206,7 @@ int main() {
     // Use two nodes just for visualization
     std::list<VertexT> weg;
     v.resetStatus();
-    VertexT last = g.numVertices() - 2; // Use the last vertex as destination
-    if (A_star(g, v, 0, last, weg)) {
+    if (A_star(g, v, 3, 2, weg)) {
       PruefeWeg(exampleID, weg);
       v.markOptimalPath(weg);
       v.draw();

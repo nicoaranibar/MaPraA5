@@ -144,10 +144,17 @@ void CoordsVisualizer::draw() {
 
         // Draw cost text
         if (gCosts[v] < infty) {
-            sf::Text costText(std::to_string(static_cast<int>(gCosts[v])), font, 20);
+            sf::Text costText(std::to_string(gCosts[v]), font, 20);
             costText.setFillColor(sf::Color::White);
             costText.setPosition(x + radius, y - radius);
             window.draw(costText);
+        }
+
+        if (gCosts[v] == infty) {
+            sf::Text infText("∞", font, 20);
+            infText.setFillColor(sf::Color::White);
+            infText.setPosition(x + radius, y - radius);
+            window.draw(infText);
         }
     }
 
