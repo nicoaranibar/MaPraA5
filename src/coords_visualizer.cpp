@@ -14,7 +14,6 @@ CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     size_t n = g.numVertices();
     gCosts.assign(n, infty);
     fCosts.assign(n, infty);
-    from.assign(n, infty);
     vertexStatuses.assign(n, VertexStatus::UnknownVertex);
 
     edgeStatuses.clear();
@@ -62,7 +61,6 @@ void CoordsVisualizer::updateVertex(VertexT vertex, double cost, double estimate
     }
     gCosts[vertex] = cost;
     fCosts[vertex] = cost + estimate;
-    from[vertex] = parent;
     vertexStatuses[vertex] = status;
 }
 
@@ -182,5 +180,14 @@ void CoordsVisualizer::waitUntilClosed() {
                 window.close();
             }
         }
+    }
+}
+
+void CoordsVisualizer::resetStatus() {
+    std::fill(vertexStatuses.begin(), vertexStatuses.end(), VertexStatus::UnknownVertex);
+    std::fill(gCosts.begin(), gCosts.end(), infty);
+    std::fill(fCosts.begin(), fCosts.end(), infty);
+    for (auto& [edge, status] : edgeStatuses) {
+        status = EdgeStatus::UnknownEdge;
     }
 }

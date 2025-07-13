@@ -15,7 +15,6 @@ class CoordsVisualizer : public GraphVisualizer {
         std::vector<VertexStatus> vertexStatuses;
         std::vector<CostT> gCosts;
         std::vector<CostT> fCosts;
-        std::vector<VertexT> from;
 
         std::map<EdgeT, EdgeStatus> edgeStatuses;
 
@@ -35,6 +34,7 @@ class CoordsVisualizer : public GraphVisualizer {
         void markOptimalPath(const std::list<VertexT>& path);
 
         void waitUntilClosed();
+        void resetStatus();
 
     private:
         std::pair<float, float> toScreenCoords(std::pair<double, double> logicalCoords) const;
