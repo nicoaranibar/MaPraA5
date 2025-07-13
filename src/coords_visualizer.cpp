@@ -143,18 +143,28 @@ void CoordsVisualizer::draw() {
         window.draw(circle);
 
         // Draw cost text
-        if (gCosts[v] < infty) {
-            sf::Text costText(std::to_string(gCosts[v]), font, 20);
-            costText.setFillColor(sf::Color::White);
-            costText.setPosition(x + radius, y - radius);
-            window.draw(costText);
+        if (show_text && gCosts[v] < infty) {
+            sf::Text text;
+            text.setFont(font);
+            text.setCharacterSize(20);
+            text.setFillColor(sf::Color::White);
+            text.setPosition(x + radius + 5, y - radius - 5);
+
+            std::string displayText = "g: " + std::to_string(gCosts[v]) + "\n";
+            displayText += "f: " + std::to_string(fCosts[v]);
+
+            text.setString(displayText);
+            window.draw(text);
         }
 
-        if (gCosts[v] == infty) {
-            sf::Text infText("?", font, 20);
-            infText.setFillColor(sf::Color::White);
-            infText.setPosition(x + radius, y - radius);
-            window.draw(infText);
+        if (show_text && gCosts[v] == infty) {
+            sf::Text text;
+            text.setFont(font);
+            text.setCharacterSize(20);
+            text.setFillColor(sf::Color::Red);
+            text.setPosition(x + radius + 5, y - radius - 5);
+            text.setString("?");
+            window.draw(text);
         }
     }
 
@@ -164,9 +174,9 @@ void CoordsVisualizer::draw() {
 
 
 void CoordsVisualizer::markOptimalPath(const std::list<VertexT>& path) {
+    markVertex(path.back(), VertexStatus::Destination);
     for (auto it = path.begin(); it != path.end(); ++it) {
         if (*it < vertexStatuses.size()) {
-            markVertex(*it, VertexStatus::Destination);
             EdgeT edge;
             if (std::next(it) != path.end()) {
                 edge = {*it, *std::next(it)};

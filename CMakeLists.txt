@@ -68,7 +68,7 @@ mapra_add_test(example_test)
 
 # hier muesst ihr eure weiteren Dateien, also Abhaengigkeiten, hinzufuegen
 add_executable(a_stern src/a_stern.cpp src/maze_graph.cpp src/coordinate_graph.cpp src/random_maze.cpp 
-                src/coords_visualizer.cpp ${a_stern_unit})
+                src/coords_visualizer.cpp src/maze_visualizer.cpp ${a_stern_unit})
 
 # Setzt diese Variable auf ON, wenn ihr Teil b bearbeitet
 option(teil_b "use SFML for part b" ON)

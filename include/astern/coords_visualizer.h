@@ -21,6 +21,9 @@ class CoordsVisualizer : public GraphVisualizer {
         float width, height;
         float scaleX, scaleY;
         float margin = 50.0f;
+
+        bool show_text = true;
+
     public:
         CoordsVisualizer(const CoordinateGraph& g, float w = 1300, float h = 800);
         ~CoordsVisualizer() = default;
@@ -35,6 +38,10 @@ class CoordsVisualizer : public GraphVisualizer {
 
         void waitUntilClosed();
         void resetStatus();
+
+        void turnOffText() {
+            show_text = false;
+        }
 
     private:
         std::pair<float, float> toScreenCoords(std::pair<double, double> logicalCoords) const;

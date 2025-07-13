@@ -213,7 +213,7 @@ int main() {
       v.markOptimalPath(weg);
       v.draw();
     } else {
-      std::cout << "A* did not find a path from 0 to last.\n";
+      std::cout << "A* did not find a path from " << v0 << " to " << v1 << ".\n";
     }
 
     v.waitUntilClosed();

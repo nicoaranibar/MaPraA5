@@ -15,7 +15,7 @@ class MazeGraph : public DistanceGraph {
 
   friend std::istream& operator>>(std::istream& is, MazeGraph& g);
   void setDimensions(int width, int height);
-
+  VertexT coordToVertex(int x, int y) const;
   // Getter methods
   int getWidth() const;
   int getHeight() const;
@@ -28,7 +28,6 @@ class MazeGraph : public DistanceGraph {
   int width, height;
   std::vector<CellType> cells;
   bool isValidCell(int x, int y) const;
-  VertexT coordToVertex(int x, int y) const;
   std::pair<int, int> vertexToCoord(VertexT v) const;
 
 };
