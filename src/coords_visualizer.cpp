@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
-CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w = 1300, float h = 800)
+CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     : graph(g), width(w), height(h) {
 
     window.create(sf::VideoMode(static_cast<unsigned int>(w), static_cast<unsigned int>(h)), "Coordinates Visualizer");
