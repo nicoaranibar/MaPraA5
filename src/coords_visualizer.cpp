@@ -159,7 +159,7 @@ void CoordsVisualizer::draw() {
     }
 
     window.display();
-    sf::sleep(sf::milliseconds(50)); // slow down the drawing to make it visible
+    sf::sleep(sf::milliseconds(1000)); // slow down the drawing to make it visible
 }
 
 
