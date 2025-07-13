@@ -19,8 +19,6 @@ class RandomMaze : public MazeGraph {
     private:
         VertexT start;
         VertexT destination;
-        int width, height;
-        std::vector<CellType> cells;
 };
 
 

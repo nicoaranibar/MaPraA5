@@ -112,3 +112,20 @@ std::pair<int, int> MazeGraph::vertexToCoord(VertexT v) const {
     }
     return {v % width, v / width};
 }
+
+// Getter methods
+int MazeGraph::getWidth() const {
+    return width;
+}
+
+int MazeGraph::getHeight() const {
+    return height;
+}
+
+const std::vector<CellType>& MazeGraph::getCells() const {
+    return cells;
+}
+
+void MazeGraph::setCells(const std::vector<CellType>& newCells) {
+    cells = newCells;
+}

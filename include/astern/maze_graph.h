@@ -16,6 +16,14 @@ class MazeGraph : public DistanceGraph {
   friend std::istream& operator>>(std::istream& is, MazeGraph& g);
   void setDimensions(int width, int height);
 
+  // Getter methods
+  int getWidth() const;
+  int getHeight() const;
+  const std::vector<CellType>& getCells() const;
+  
+  // Setter method for cells
+  void setCells(const std::vector<CellType>& newCells);
+
  private:
   int width, height;
   std::vector<CellType> cells;

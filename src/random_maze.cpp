@@ -9,9 +9,10 @@ RandomMaze::RandomMaze(int w, int h, const std::vector<CellType>& c) {
     }
 
     setDimensions(w, h);
-    cells = c;
+    setCells(c);
     
     // Find start and destination cells
+    const auto& cells = getCells();
     for (VertexT i = 0; i < cells.size(); ++i) {
         if (cells[i] == CellType::Start) {
             start = i;
@@ -19,14 +20,14 @@ RandomMaze::RandomMaze(int w, int h, const std::vector<CellType>& c) {
             destination = i;
         }
     }
-
 }
 
 std::ostream& operator<<(std::ostream& os, const RandomMaze& maze) {
-    os << "RandomMaze: " << maze.width << "x" << maze.height << "\n";
-    for (int y = 0; y < maze.height; ++y) {
-        for (int x = 0; x < maze.width; ++x) {
-            switch (maze.cells[y * maze.width + x]) {
+    os << "RandomMaze: " << maze.getWidth() << "x" << maze.getHeight() << "\n";
+    const auto& cells = maze.getCells();
+    for (int y = 0; y < maze.getHeight(); ++y) {
+        for (int x = 0; x < maze.getWidth(); ++x) {
+            switch (cells[y * maze.getWidth() + x]) {
                 case CellType::Wall:
                     os << "# ";
                     break;
