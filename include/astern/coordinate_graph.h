@@ -29,9 +29,9 @@ class CoordinateGraph : public DistanceGraph {
   std::pair<VertexT, VertexT> getExamplePair() const {
     switch (exampleID) {
       case 1: return {3, 2};
-      case 2: return {0, 2};
+      case 2: return {2, 7};
       case 3: return {0, 3};
-      case 4: return {0, 4};
+      case 4: return {0, 2};
       default: return {0, 1}; // Default case
     }
   }
