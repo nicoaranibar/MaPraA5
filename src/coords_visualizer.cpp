@@ -168,8 +168,8 @@ void CoordsVisualizer::markOptimalPath(const std::list<VertexT>& path) {
 
 
 std::pair<float, float> CoordsVisualizer::toScreenCoords(std::pair<double, double> logicalCoords) const {
-    float x = margin + (logicalCoords.first - graph.getCoordinates()[0].first) * scaleX;
-    float y = margin + (logicalCoords.second - graph.getCoordinates()[0].second) * scaleY;
+    float x = margin + (logicalCoords.first) * scaleX;
+    float y = margin + (logicalCoords.second) * scaleY;
     return {x, y};
 }
 
