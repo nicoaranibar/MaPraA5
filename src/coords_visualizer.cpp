@@ -151,7 +151,7 @@ void CoordsVisualizer::draw() {
         }
 
         if (gCosts[v] == infty) {
-            sf::Text infText("∞", font, 20);
+            sf::Text infText("?", font, 20);
             infText.setFillColor(sf::Color::White);
             infText.setPosition(x + radius, y - radius);
             window.draw(infText);
@@ -167,6 +167,20 @@ void CoordsVisualizer::markOptimalPath(const std::list<VertexT>& path) {
     for (auto it = path.begin(); it != path.end(); ++it) {
         if (*it < vertexStatuses.size()) {
             markVertex(*it, VertexStatus::Destination);
+            EdgeT edge;
+            if (std::next(it) != path.end()) {
+                edge = {*it, *std::next(it)};
+            } else if (it != path.begin()) {
+                edge = {*std::prev(it), *it};
+            } else {
+                continue; // Skip if it's the only vertex in the path
+            }
+            auto edgeIt = edgeStatuses.find(edge);
+            if (edgeIt != edgeStatuses.end()) {
+                edgeIt->second = EdgeStatus::Optimal;
+            } else {
+                std::cerr << "Edge not found in edgeStatuses: " << edge.first << " -> " << edge.second << std::endl;
+            }
         }
     }
 }
