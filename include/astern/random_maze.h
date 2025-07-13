@@ -4,6 +4,7 @@
 #include "astern/unit.h"
 #include "astern/maze_graph.h"
 #include <vector>
+#include <ostream>
 
 
 class RandomMaze : public MazeGraph {
@@ -12,6 +13,9 @@ class RandomMaze : public MazeGraph {
 
         VertexT getStart() const;
         VertexT getDestination() const;
+
+        friend std::ostream& operator<<(std::ostream& os, const RandomMaze& maze);
+
     private:
         VertexT start;
         VertexT destination;

@@ -22,6 +22,32 @@ RandomMaze::RandomMaze(int w, int h, const std::vector<CellType>& c) {
 
 }
 
+std::ostream& operator<<(std::ostream& os, const RandomMaze& maze) {
+    os << "RandomMaze: " << maze.width << "x" << maze.height << "\n";
+    for (int y = 0; y < maze.height; ++y) {
+        for (int x = 0; x < maze.width; ++x) {
+            switch (maze.cells[y * maze.width + x]) {
+                case CellType::Wall:
+                    os << "# ";
+                    break;
+                case CellType::Ground:
+                    os << ". ";
+                    break;
+                case CellType::Start:
+                    os << "S ";
+                    break;
+                case CellType::Destination:
+                    os << "D ";
+                    break;
+            }
+        }
+        os << "\n";
+    }
+    return os;
+}
+
+
+
 VertexT RandomMaze::getStart() const {
     return start;
 }

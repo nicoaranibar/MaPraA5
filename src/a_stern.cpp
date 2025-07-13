@@ -237,6 +237,8 @@ int main() {
 
     VertexT start = maze.getStart();
     VertexT destination = maze.getDestination();
+
+    std::cout << "Generated maze:\n" << maze << "\n";
     
     std::cout << "Start vertex: " << start << ", Destination vertex: " << destination << "\n";
 
