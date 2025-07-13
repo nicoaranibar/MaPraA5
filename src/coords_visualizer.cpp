@@ -10,7 +10,6 @@ CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     gCosts.resize(g.numVertices(), infty);
     fCosts.resize(g.numVertices(), infty);
     from.resize(g.numVertices(), undefinedVertex);
-    font.loadFromFile("../data/font/BebasNeue-Regular.ttf");
 
     vertexStatuses.resize(g.numVertices(), VertexStatus::UnknownVertex);
     edgeStatuses.clear();
@@ -29,8 +28,10 @@ CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     auto [minY, maxY] = std::minmax_element(g.getCoordinates().begin(), g.getCoordinates().end(),
                                             [](auto a, auto b) { return a.second < b.second; });
 
-    scaleX = (w - 2 * margin) / (maxX->first - minX->first);
-    scaleY = (h - 2 * margin) / (maxY->second - minY->second);
+    double dx = maxX->first - minX->first;
+    double dy = maxY->second - minY->second;
+    scaleX = (w - 2 * margin) / (dx == 0 ? 1.0 : dx);
+    scaleY = (h - 2 * margin) / (dy == 0 ? 1.0 : dy);
 }
 
 void CoordsVisualizer::markVertex(VertexT vertex, VertexStatus status) {
@@ -68,6 +69,9 @@ void CoordsVisualizer::draw() {
 
     for (VertexT v = 0; v < graph.numVertices(); ++v) {
         for (const auto& [u, cost] : graph.getNeighbors(v)) {
+            if (u >= graph.numVertices()) {
+                throw std::out_of_range("Neighbor vertex index out of range");
+            }
             auto [x1, y1] = toScreenCoords(graph.getCoordinates()[v]);
             auto [x2, y2] = toScreenCoords(graph.getCoordinates()[u]);
             auto edge = std::make_pair(v, u);
