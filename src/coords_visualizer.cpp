@@ -6,26 +6,36 @@ CoordsVisualizer::CoordsVisualizer(const CoordinateGraph& g, float w, float h)
     : graph(g), width(w), height(h) {
 
     window.create(sf::VideoMode(static_cast<unsigned int>(w), static_cast<unsigned int>(h)), "Coordinates Visualizer");
-   
-    gCosts.resize(g.numVertices(), infty);
-    fCosts.resize(g.numVertices(), infty);
-    from.resize(g.numVertices(), undefinedVertex);
+    if (!font.loadFromFile("../data/font/BebasNeue-Regular.ttf")) {
+        std::cout << "Error loading font file." << std::endl;
+        std::exit(1);
+    }
 
-    vertexStatuses.resize(g.numVertices(), VertexStatus::UnknownVertex);
+    size_t n = g.numVertices();
+    gCosts.assign(n, infty);
+    fCosts.assign(n, infty);
+    from.assign(n, infty);
+    vertexStatuses.assign(n, VertexStatus::UnknownVertex);
+
     edgeStatuses.clear();
-    for (VertexT u = 0; u < g.numVertices(); ++u) {
+    for (VertexT u = 0; u < n; ++u) {
         for (const auto& [v, cost] : g.getNeighbors(u)) {
-            edgeStatuses[{u, v}] = EdgeStatus::UnknownEdge;
+            if (v < n) {
+                edgeStatuses[{u, v}] = EdgeStatus::UnknownEdge;
+            } else {
+                std::cerr << "Arista apunta a vértice inválido: " << u << " -> " << v << std::endl;
+            }
         }
     }
 
-    if (!font.loadFromFile("../data/font/BebasNeue-Regular.ttf")) {
-        std::cout << "Error loading font file." << std::endl;
-    }
 
-    auto [minX, maxX] = std::minmax_element(g.getCoordinates().begin(), g.getCoordinates().end(),
+    const auto& coords = g.getCoordinates();
+    if (coords.empty()) {
+        throw std::runtime_error("No coordinates available in the graph.");
+    }
+    auto [minX, maxX] = std::minmax_element(coords.begin(), coords.end(),
                                             [](auto a, auto b) { return a.first < b.first; });
-    auto [minY, maxY] = std::minmax_element(g.getCoordinates().begin(), g.getCoordinates().end(),
+    auto [minY, maxY] = std::minmax_element(coords.begin(), coords.end(),
                                             [](auto a, auto b) { return a.second < b.second; });
 
     double dx = maxX->first - minX->first;
