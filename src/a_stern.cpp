@@ -256,6 +256,8 @@ int main() {
       std::cout << "A* did not find a path from " << v0 << " to " << v1 << ".\n";
     }
 
+    v.waitUntilClosed();
+
 
   } else if (exampleID == 10) {
     // ----- RandomMaze
@@ -288,6 +290,8 @@ int main() {
     } else {
       std::cout << "A* did not find a path from " << start << " to " << destination << ".\n";
     }
+
+    v.waitUntilClosed();
   }
 
 
