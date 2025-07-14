@@ -60,7 +60,7 @@ void CoordsVisualizer::updateVertex(VertexT vertex, double cost, double estimate
         throw std::out_of_range("Vertex index out of range");
     }
     gCosts[vertex] = cost;
-    fCosts[vertex] = cost + estimate;
+    fCosts[vertex] = estimate;
     vertexStatuses[vertex] = status;
 }
 
@@ -151,7 +151,7 @@ void CoordsVisualizer::draw() {
             text.setPosition(x + radius + 5, y - radius - 5);
 
             std::string displayText = "g: " + std::to_string(gCosts[v]) + "\n";
-            displayText += "f: " + std::to_string(fCosts[v]);
+            displayText += "h: " + std::to_string(fCosts[v]);
 
             text.setString(displayText);
             window.draw(text);

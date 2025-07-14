@@ -32,7 +32,7 @@ void MazeVisualizer::updateVertex(VertexT vertex, double cost, double estimate,
         throw std::out_of_range("Vertex index out of range");
     }
     gCosts[vertex] = cost;
-    fCosts[vertex] = cost + estimate;
+    fCosts[vertex] = estimate;
     vertexStatuses[vertex] = status;
 }
 
@@ -88,7 +88,7 @@ void MazeVisualizer::draw() {
                 text.setCharacterSize(20);
                 text.setFillColor(sf::Color::White);
                 text.setPosition(x * cellSize + 5, y * cellSize + 5);
-                text.setString("g: " + std::to_string(gCosts[vertex]) + "\nf: " + std::to_string(fCosts[vertex]));
+                text.setString("g: " + std::to_string(gCosts[vertex]) + "\nh: " + std::to_string(fCosts[vertex]));
                 window.draw(text);
             }
         }
