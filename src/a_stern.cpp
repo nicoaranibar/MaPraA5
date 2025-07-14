@@ -143,7 +143,7 @@ bool A_star(const DistanceGraph& g, GraphVisualizer& v, VertexT start,
         fCost[neighbor] = tentative_gCost + g.estimatedCost(neighbor, ziel);
         open.update({fCost[neighbor], neighbor});
         v.markEdge({cur, neighbor}, EdgeStatus::Active);
-        v.updateVertex(neighbor, tentative_gCost, fCost[neighbor], cur, VertexStatus::InQueue);
+        v.updateVertex(neighbor, tentative_gCost, g.estimatedCost(neighbor,ziel), cur, VertexStatus::InQueue);
       }
     }
     v.markVertex(cur, VertexStatus::Done);
