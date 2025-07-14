@@ -204,6 +204,12 @@ int main() {
       
     }
 
+    char choice;
+    std::cout << "\n\nDo you want the text output of the visualizer? (y/n): \n";
+    std::cin >> choice;
+    if (choice == 'n' || choice == 'N') {
+      v.turnOffText();
+    }
     // Use two nodes just for visualization
     std::list<VertexT> weg;
     v.resetStatus();
@@ -245,6 +251,14 @@ int main() {
       }
     }
 
+
+    char choice;
+    std::cout << "\n\nDo you want the text output of the visualizer? (y/n): \n";
+    std::cin >> choice;
+    if (choice == 'n' || choice == 'N') {
+      v.turnOffText();
+    }
+
     auto [v0, v1] = StartZielPaare(exampleID)[0];
     std::list<VertexT> weg;
     v.resetStatus();
@@ -283,6 +297,13 @@ int main() {
     MazeVisualizer v(maze, 800);
     std::list<VertexT> weg;
     v.resetStatus();
+
+    char choice;
+    std::cout << "\n\nDo you want the text output of the visualizer? (y/n): \n";
+    std::cin >> choice;
+    if (choice == 'n' || choice == 'N') {
+      v.turnOffText();
+    }
     if (A_star(maze, v, start, destination, weg)) {
       PruefeWeg(10, weg);
       v.markOptimalPath(weg);
