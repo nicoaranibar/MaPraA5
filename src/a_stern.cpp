@@ -6,6 +6,7 @@
 #include "astern/maze_graph.h"
 #include "astern/random_maze.h"
 #include "astern/coords_visualizer.h"
+#include "astern/maze_visualizer.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -231,7 +232,7 @@ int main() {
     file >> g;
     PruefeHeuristik(g);
 
-    TextVisualizer v;
+    MazeVisualizer v(g, 800);
 
     for (const auto& [start, ziel] : StartZielPaare(exampleID)) {
       std::list<VertexT> weg;
@@ -243,6 +244,18 @@ int main() {
         std::cout << "A* did not find a path from " << start << " to " << ziel << ".\n";
       }
     }
+
+    auto [v0, v1] = StartZielPaare(exampleID)[0];
+    std::list<VertexT> weg;
+    v.resetStatus();
+    if (A_star(g, v, v0, v1, weg)) {
+      PruefeWeg(exampleID, weg);
+      v.markOptimalPath(weg);
+      v.draw();
+    } else {
+      std::cout << "A* did not find a path from " << v0 << " to " << v1 << ".\n";
+    }
+
 
   } else if (exampleID == 10) {
     // ----- RandomMaze
@@ -265,12 +278,13 @@ int main() {
     std::cout << "Start vertex: " << start << ", Destination vertex: " << destination << "\n";
 
     PruefeHeuristik(maze);
-    TextVisualizer v;
+    MazeVisualizer v(maze, 800);
     std::list<VertexT> weg;
+    v.resetStatus();
     if (A_star(maze, v, start, destination, weg)) {
       PruefeWeg(10, weg);
-      //v.markOptimalPath(weg);
-      //v.draw();
+      v.markOptimalPath(weg);
+      v.draw();
     } else {
       std::cout << "A* did not find a path from " << start << " to " << destination << ".\n";
     }
